@@ -6,7 +6,7 @@ local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/Regul
 
 local entity = spawner.Create({
 	Entity = {
-		Name = "Blitz Example",
+		Name = "RSA2",
 		Asset = "https://github.com/RegularVynixu/Utilities/raw/main/Doors/Entity%20Spawner/Assets/Entities/BackdoorRush.rbxm",
 		HeightOffset = 0
 	},
@@ -48,7 +48,7 @@ local entity = spawner.Create({
 	},
 	Death = {
 		Type = "Curious",
-		Hints = {"Oh... Hello.", "I didn't expect to see you here.", "Let's see what you died to.", "Oh, one of my favorites.", "She said we should call that one Blitz.", "Well... I'll see you later, right? You'll come back?", "Haha... of course you will."},
+		Hints = {"Oh... Hello.", "I didn't expect to see you here.", "so What are you doing Nigga?", "Why do you just died nigga?", "dont die again...", "Understand Nigga?", "i dont give a shit dont die ok Bye.."},
 		Cause = ""
 	}
 })
