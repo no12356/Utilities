@@ -6,7 +6,7 @@ local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/Regul
 
 local entity = spawner.Create({
 	Entity = {
-		Name = "Template Entity",
+		Name = "Tfatnigger",
 		Asset = "https://github.com/RegularVynixu/Utilities/blob/main/Doors%20Entity%20Spawner/Models/Rush.rbxm?raw=true",
 		HeightOffset = 0
 	},
@@ -49,7 +49,7 @@ local entity = spawner.Create({
 	Death = {
 		Type = "Guiding", -- "Curious"
 		Hints = {"Death", "Hints", "Go", "Here"},
-		Cause = ""
+		Cause = "you died"
 	}
 })
 
