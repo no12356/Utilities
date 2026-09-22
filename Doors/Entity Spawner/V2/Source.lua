@@ -2098,7 +2098,11 @@ if not Humanoid:GetAttribute("VynixuJumpscarePlayed") then
 		true
 	)
 
-	PlayJumpscare(config.Jumpscare)
+	task.spawn(function()
+		PlayJumpscare(
+			config.Jumpscare
+		)
+	end)
 end
 
 -- \\ Death hints // --
