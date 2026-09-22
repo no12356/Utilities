@@ -1039,8 +1039,8 @@ local function PlayJumpscare(config)
 		oldGui:Destroy()
 	end
 
-	local image1 = LoadCustomAsset(s.Image1)
-	local image2 = LoadCustomAsset(s.Image2)
+local image1 = ""
+local image2 = ""
 
 	local function LoadJumpscareSound(data)
 		if typeof(data) ~= "table"
