@@ -1019,102 +1019,26 @@ local function PlayJumpscare(config)
 		return
 	end
 
-	local s =
-		config[2]
+	local s = config[2]
 
 	if typeof(s) ~= "table" then
 		return
 	end
 
 	local oldGui =
-		CoreGui:FindFirstChild(
-			"JumpscareGui"
-		)
+		CoreGui:FindFirstChild("JumpscareGui")
 
 	if oldGui then
 		oldGui:Destroy()
 	end
 
-	local gui =
-		Instance.new("ScreenGui")
+	local image1 =
+		LoadCustomAsset(s.Image1)
 
-	gui.Name =
-		"JumpscareGui"
+	local image2 =
+		LoadCustomAsset(s.Image2)
 
-	gui.IgnoreGuiInset = true
-	gui.ResetOnSpawn = false
-	gui.DisplayOrder = 999999
-
-	gui.Parent =
-		CoreGui
-
-	local bg =
-		Instance.new("Frame")
-
-	bg.Size =
-		UDim2.fromScale(
-			1,
-			1
-		)
-
-	bg.BackgroundColor3 =
-		Color3.new(
-			0,
-			0,
-			0
-		)
-
-	bg.BorderSizePixel = 0
-	bg.Parent = gui
-
-	local face =
-		Instance.new("ImageLabel")
-
-	face.AnchorPoint =
-		Vector2.new(
-			0.5,
-			0.5
-		)
-
-	face.Position =
-		UDim2.fromScale(
-			0.5,
-			0.5
-		)
-
-	face.Size =
-		UDim2.fromOffset(
-			150,
-			150
-		)
-
-	face.BackgroundTransparency = 1
-	face.ImageTransparency = 0
-
-	pcall(function()
-		face.ResampleMode =
-			Enum.ResamplerMode.Pixelated
-	end)
-
-	if typeof(s.Image1) == "string" then
-		pcall(function()
-
-			local image =
-				LoadCustomAsset(
-					s.Image1
-				)
-
-			if image then
-				face.Image =
-					image
-			end
-		end)
-	end
-
-	face.Parent =
-		gui
-
-	local function LoadSound(data)
+	local function LoadJumpscareSound(data)
 		if typeof(data) ~= "table"
 			or data[1] == nil
 		then
@@ -1127,50 +1051,219 @@ local function PlayJumpscare(config)
 		local soundId =
 			tostring(data[1])
 
-		if soundId:match(
-			"^rbxassetid://"
-		) then
-
-			sound.SoundId =
-				soundId
-
+		if soundId:find("rbxasset://") then
+			sound.SoundId = soundId
 		else
-
 			sound.SoundId =
-				"rbxassetid://" .. soundId
+				"rbxassetid://" ..
+				soundId:gsub("%D", "")
 		end
 
 		if typeof(data[2]) == "table" then
-
-			for property, value in pairs(
-				data[2]
-			) do
-
+			for property, value in next, data[2] do
 				pcall(function()
-
-					sound[property] =
-						value
+					sound[property] = value
 				end)
 			end
 		end
 
-		sound.Parent =
-			SoundService
+		sound.Parent = workspace
 
 		return sound
 	end
 
 	local sound1 =
-		LoadSound(
-			s.Sound1
-		)
+		LoadJumpscareSound(s.Sound1)
 
 	local sound2 =
-		LoadSound(
-			s.Sound2
+		LoadJumpscareSound(s.Sound2)
+
+	local gui =
+		Instance.new("ScreenGui")
+
+	local bg =
+		Instance.new("Frame")
+
+	local face =
+		Instance.new("ImageLabel")
+
+	gui.Name = "JumpscareGui"
+	gui.IgnoreGuiInset = true
+	gui.ZIndexBehavior =
+		Enum.ZIndexBehavior.Sibling
+	gui.ResetOnSpawn = false
+	gui.DisplayOrder = 999999
+
+	bg.Name = "Background"
+	bg.BackgroundColor3 =
+		Color3.new(0, 0, 0)
+	bg.BorderSizePixel = 0
+	bg.Size =
+		UDim2.new(1, 0, 1, 0)
+	bg.ZIndex = 999
+
+	face.Name = "Face"
+	face.AnchorPoint =
+		Vector2.new(0.5, 0.5)
+	face.BackgroundTransparency = 1
+	face.Position =
+		UDim2.new(0.5, 0, 0.5, 0)
+	face.ResampleMode =
+		Enum.ResamplerMode.Pixelated
+	face.Size =
+		UDim2.new(0, 150, 0, 150)
+	face.Image =
+		image1 or ""
+	face.ZIndex = 1000
+
+	face.Parent = bg
+	bg.Parent = gui
+	gui.Parent = CoreGui
+
+	local absHeight =
+		gui.AbsoluteSize.Y
+
+	local minTeaseSize =
+		absHeight / 5
+
+	local maxTeaseSize =
+		absHeight / 2.5
+
+	local teaseConfig =
+		s.Tease
+
+	if typeof(teaseConfig) == "table"
+		and teaseConfig[1]
+	then
+		local teaseAmount =
+			math.random(
+				teaseConfig.Min,
+				teaseConfig.Max
+			)
+
+		if sound1 then
+			sound1:Play()
+		end
+
+		for _ = teaseConfig.Min, teaseAmount do
+			task.wait(
+				math.random(100, 200) / 100
+			)
+
+			local growFactor =
+				(maxTeaseSize - minTeaseSize)
+				/ teaseAmount
+
+			face.Size =
+				UDim2.new(
+					0,
+					face.AbsoluteSize.X
+						+ growFactor,
+					0,
+					face.AbsoluteSize.Y
+						+ growFactor
+				)
+		end
+
+		task.wait(
+			math.random(100, 200) / 100
+		)
+	end
+
+	local flashing =
+		s.Flashing
+
+	if typeof(flashing) == "table"
+		and flashing[1]
+	then
+		task.spawn(function()
+			while gui.Parent do
+				bg.BackgroundColor3 =
+					flashing[2]
+
+				task.wait(
+					math.random(25, 100) / 1000
+				)
+
+				bg.BackgroundColor3 =
+					Color3.new(0, 0, 0)
+
+				task.wait(
+					math.random(25, 100) / 1000
+				)
+			end
+		end)
+	end
+
+	if s.Shake then
+		task.spawn(function()
+			local origin =
+				face.Position
+
+			while gui.Parent do
+				face.Position =
+					origin +
+					UDim2.new(
+						0,
+						math.random(-10, 10),
+						0,
+						math.random(-10, 10)
+					)
+
+				face.Rotation =
+					math.random(-5, 5)
+
+				task.wait()
+			end
+		end)
+	end
+
+	face.Image =
+		image2 or image1 or ""
+
+	face.Size =
+		UDim2.new(
+			0,
+			maxTeaseSize,
+			0,
+			maxTeaseSize
 		)
 
-	-- \\ Tease // --
+	if sound2 then
+		sound2:Play()
+	end
+
+	TS:Create(
+		face,
+		TweenInfo.new(0.75),
+		{
+			Size =
+				UDim2.new(
+					0,
+					absHeight * 3,
+					0,
+					absHeight * 3
+				),
+
+			ImageTransparency = 0.5
+		}
+	):Play()
+
+	task.wait(0.75)
+
+	if gui then
+		gui:Destroy()
+	end
+
+	if sound1 then
+		sound1:Destroy()
+	end
+
+	if sound2 then
+		sound2:Destroy()
+	end
+end
+-- \\ Tease // --
 
 	if typeof(s.Tease) == "table"
 		and s.Tease[1] == true
