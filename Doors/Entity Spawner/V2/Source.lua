@@ -2080,15 +2080,15 @@ local function DamagePlayer(entity)
 
 	-- \\ Jumpscare // --
 
-if not LocalPlayer:GetAttribute("VynixuJumpscarePlayed") then
-	LocalPlayer:SetAttribute(
+if not Humanoid:GetAttribute("VynixuJumpscarePlayed") then
+	Humanoid:SetAttribute(
 		"VynixuJumpscarePlayed",
 		true
 	)
 
-	PlayJumpscare(
-		config.Jumpscare
-	)
+	task.spawn(function()
+		PlayJumpscare(config.Jumpscare)
+	end)
 end
 
 	-- \\ Death hints // --
