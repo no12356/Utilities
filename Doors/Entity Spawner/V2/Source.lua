@@ -208,7 +208,6 @@ local Module = {
 
 -- \\ Functions // --
 
--- FIX: safely clone nil/non-table values
 local function CloneTable(tbl)
 	if typeof(tbl) ~= "table" then
 		return tbl
@@ -227,7 +226,6 @@ local function CloneTable(tbl)
 	return new
 end
 
--- FIX: safely apply defaults when config or nested values are missing
 local function ApplyConfigDefaults(tbl, defaults)
 	if typeof(tbl) ~= "table" then
 		tbl = {}
@@ -437,7 +435,6 @@ local function PlayJumpscare(config)
 		return
 	end
 
-	-- Remove any previous jumpscare
 	local oldGui = CoreGui:FindFirstChild("JumpscareGui")
 
 	if oldGui then
@@ -468,7 +465,6 @@ local function PlayJumpscare(config)
 	face.ImageTransparency = 0
 	face.ResampleMode = Enum.ResamplerMode.Pixelated
 
-	-- Image 1
 	if typeof(s.Image1) == "string" then
 		pcall(function()
 			face.Image = LoadCustomAsset(s.Image1)
@@ -515,7 +511,6 @@ local function PlayJumpscare(config)
 		max = math.max(min, max)
 
 		for i = 1, math.random(min, max) do
-
 			if sound1 then
 				sound1:Play()
 			end
@@ -1455,7 +1450,6 @@ LocalPlayer.CharacterAdded:Connect(
 -- \\ Main // --
 
 Module.Create = function(self, config)
-	-- FIX: allow nil/non-table configs
 	if typeof(config) ~= "table" then
 		config = {}
 	end
@@ -1466,7 +1460,6 @@ Module.Create = function(self, config)
 			CONST.DEFAULT.CONFIG
 		)
 
-	-- FIX: use merged config instead of raw config
 	newConfig.Movement.Speed =
 		CONST.BASE_ENTITY_SPEED / 100 *
 		(tonumber(newConfig.Movement.Speed) or 100)
@@ -2016,7 +2009,7 @@ Module.Run = function(self, entity, copyEntity)
 				task.spawn(
 					entity.RunCallback,
 					entity,
-					"OnReachNode",
+					"OnReachedNode",
 					v
 				)
 			end
@@ -2072,7 +2065,7 @@ Module.Run = function(self, entity, copyEntity)
 						task.spawn(
 							entity.RunCallback,
 							entity,
-							"OnReachNode",
+							"OnReachedNode",
 							v
 						)
 					end
@@ -2126,7 +2119,7 @@ Module.Run = function(self, entity, copyEntity)
 						task.spawn(
 							entity.RunCallback,
 							entity,
-							"OnReachNode",
+							"OnReachedNode",
 							v
 						)
 					end
@@ -2171,7 +2164,7 @@ Module.Run = function(self, entity, copyEntity)
 				task.spawn(
 					entity.RunCallback,
 					entity,
-					"OnReachNode",
+					"OnReachedNode",
 					n
 				)
 			end
@@ -2269,7 +2262,7 @@ Module.Run = function(self, entity, copyEntity)
 						task.spawn(
 							entity.RunCallback,
 							entity,
-							"OnReachNode",
+							"OnReachedNode",
 							roomNodes[i]
 						)
 					end
@@ -2317,7 +2310,7 @@ Module.Run = function(self, entity, copyEntity)
 						task.spawn(
 							entity.RunCallback,
 							entity,
-							"OnReachNode",
+							"OnReachedNode",
 							roomNodes[i]
 						)
 					end
@@ -2348,7 +2341,7 @@ Module.Run = function(self, entity, copyEntity)
 				task.spawn(
 					entity.RunCallback,
 					entity,
-					"OnReachNode",
+					"OnReachedNode",
 					n
 				)
 			end
