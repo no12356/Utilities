@@ -208,7 +208,12 @@ local Module = {
 
 -- \\ Functions // --
 
+-- FIX: safely clone nil/non-table values
 local function CloneTable(tbl)
+	if typeof(tbl) ~= "table" then
+		return tbl
+	end
+
 	local new = {}
 
 	for key, value in next, tbl do
@@ -222,23 +227,31 @@ local function CloneTable(tbl)
 	return new
 end
 
+-- FIX: safely apply defaults when config or nested values are missing
 local function ApplyConfigDefaults(tbl, defaults)
+	if typeof(tbl) ~= "table" then
+		tbl = {}
+	end
+
+	if typeof(defaults) ~= "table" then
+		return CloneTable(tbl)
+	end
+
 	local new = CloneTable(tbl)
 
 	for key, value in next, defaults do
 		if new[key] == nil then
-			if typeof(value) == "table" then
-				new[key] = CloneTable(value)
-			else
-				new[key] = value
-			end
+			new[key] = CloneTable(value)
 
 		elseif typeof(value) == "table" then
 			if typeof(new[key]) ~= "table" then
 				new[key] = {}
 			end
 
-			new[key] = ApplyConfigDefaults(new[key], value)
+			new[key] = ApplyConfigDefaults(
+				new[key],
+				value
+			)
 		end
 	end
 
@@ -414,14 +427,21 @@ end
 -- \\ Jumpscare // --
 
 local function PlayJumpscare(config)
-	if not config or config[1] ~= true then
+	if typeof(config) ~= "table" or config[1] ~= true then
 		return
 	end
 
 	local s = config[2]
 
-	if not s then
+	if typeof(s) ~= "table" then
 		return
+	end
+
+	-- Remove any previous jumpscare
+	local oldGui = CoreGui:FindFirstChild("JumpscareGui")
+
+	if oldGui then
+		oldGui:Destroy()
 	end
 
 	local gui = Instance.new("ScreenGui")
@@ -448,20 +468,28 @@ local function PlayJumpscare(config)
 	face.ImageTransparency = 0
 	face.ResampleMode = Enum.ResamplerMode.Pixelated
 
-	pcall(function()
-		face.Image = LoadCustomAsset(s.Image1)
-	end)
+	-- Image 1
+	if typeof(s.Image1) == "string" then
+		pcall(function()
+			face.Image = LoadCustomAsset(s.Image1)
+		end)
+	end
 
 	face.Parent = gui
 
 	local function LoadSound(data)
-		if not data then
+		if typeof(data) ~= "table" then
+			return nil
+		end
+
+		if data[1] == nil then
 			return nil
 		end
 
 		local sound = Instance.new("Sound")
 
-		sound.SoundId = "rbxassetid://" .. tostring(data[1])
+		sound.SoundId =
+			"rbxassetid://" .. tostring(data[1])
 
 		for property, value in pairs(data[2] or {}) do
 			pcall(function()
@@ -479,11 +507,14 @@ local function PlayJumpscare(config)
 
 	-- \\ Tease // --
 
-	if s.Tease and s.Tease[1] then
-		for i = 1, math.random(
-			s.Tease.Min or 1,
-			s.Tease.Max or 5
-		) do
+	if typeof(s.Tease) == "table" and s.Tease[1] == true then
+		local min = tonumber(s.Tease.Min) or 1
+		local max = tonumber(s.Tease.Max) or 5
+
+		min = math.max(1, min)
+		max = math.max(min, max)
+
+		for i = 1, math.random(min, max) do
 
 			if sound1 then
 				sound1:Play()
@@ -506,17 +537,25 @@ local function PlayJumpscare(config)
 
 	local flashThread
 
-	if s.Flashing and s.Flashing[1] then
+	if typeof(s.Flashing) == "table"
+		and s.Flashing[1] == true then
+
 		flashThread = task.spawn(function()
 			while gui.Parent do
 				bg.BackgroundColor3 =
-					s.Flashing[2] or Color3.new(1, 1, 1)
+					s.Flashing[2]
+					or Color3.new(1, 1, 1)
 
 				task.wait(
 					math.random(25, 100) / 1000
 				)
 
-				bg.BackgroundColor3 = Color3.new(0, 0, 0)
+				if not gui.Parent then
+					break
+				end
+
+				bg.BackgroundColor3 =
+					Color3.new(0, 0, 0)
 
 				task.wait(
 					math.random(25, 100) / 1000
@@ -529,28 +568,33 @@ local function PlayJumpscare(config)
 
 	local shakeConnection
 
-	if s.Shake then
-		shakeConnection = RunService.RenderStepped:Connect(function()
-			if not face.Parent then
-				return
-			end
+	if s.Shake == true then
+		shakeConnection =
+			RunService.RenderStepped:Connect(function()
 
-			face.Position = UDim2.new(
-				0.5,
-				math.random(-35, 35),
-				0.5,
-				math.random(-10, 10)
-			)
+				if not face.Parent then
+					return
+				end
 
-			face.Rotation = math.random(-5, 5)
-		end)
+				face.Position = UDim2.new(
+					0.5,
+					math.random(-35, 35),
+					0.5,
+					math.random(-10, 10)
+				)
+
+				face.Rotation =
+					math.random(-5, 5)
+			end)
 	end
 
 	-- \\ Image 2 + Sound 2 // --
 
-	pcall(function()
-		face.Image = LoadCustomAsset(s.Image2)
-	end)
+	if typeof(s.Image2) == "string" then
+		pcall(function()
+			face.Image = LoadCustomAsset(s.Image2)
+		end)
+	end
 
 	if sound2 then
 		sound2:Play()
@@ -563,7 +607,7 @@ local function PlayJumpscare(config)
 	local zoomSize =
 		(camera and camera.ViewportSize.Y or 1080) * 3
 
-	TweenService:Create(
+	local zoomTween = TweenService:Create(
 		face,
 
 		TweenInfo.new(
@@ -579,9 +623,13 @@ local function PlayJumpscare(config)
 
 			ImageTransparency = 0
 		}
-	):Play()
+	)
+
+	zoomTween:Play()
 
 	task.wait(1.5)
+
+	-- \\ Cleanup // --
 
 	if shakeConnection then
 		shakeConnection:Disconnect()
@@ -707,10 +755,15 @@ local function CrucifixEntity(entity)
 		end
 	end
 
+	local crucifixType =
+		config.Crucifixion.Type:lower()
+
+	local crucifixData =
+		Storage.CrucifixTypes[crucifixType]
+
 	local Color =
-		Storage.CrucifixTypes[
-			config.Crucifixion.Type:lower()
-		].Color
+		crucifixData and crucifixData.Color
+		or Color3.fromRGB(137, 207, 255)
 
 	for _, v in next, Repentance:QueryDescendants(".GiveMeColor") do
 		if v:IsA("Light") or v:IsA("BasePart") then
@@ -1007,6 +1060,8 @@ local function CrucifixEntity(entity)
 
 				task.wait()
 			end
+
+			color:Destroy()
 		end)
 
 		waitUntil(9.625)
@@ -1151,13 +1206,21 @@ local function DamagePlayer(entity)
 
 		local cause = config.Death.Cause
 
-		if typeof(cause) ~= "string" or cause ~= "" then
+		if typeof(cause) ~= "string" or cause == "" then
 			cause = config.Entity.Name
 		end
 
-		GameStats[
-			"Player_" .. LocalPlayer.Name
-		].Total.DeathCause.Value = cause
+		local playerStats =
+			GameStats:FindFirstChild(
+				"Player_" .. LocalPlayer.Name
+			)
+
+		if playerStats
+			and playerStats:FindFirstChild("Total")
+			and playerStats.Total:FindFirstChild("DeathCause") then
+
+			playerStats.Total.DeathCause.Value = cause
+		end
 	end
 end
 
@@ -1193,18 +1256,21 @@ local function GetNodesFromRoom(room, reversed)
 
 		local n = roomExit:Clone()
 
-		n.Name = index
+		n.Name = tostring(index)
 		n.CFrame -= Vector3.new(0, 3, 0)
 
 		nodes[index] = n
 	end
 
 	table.sort(nodes, function(a, b)
+		local aName = tonumber(a.Name) or 0
+		local bName = tonumber(b.Name) or 0
+
 		if reversed then
-			return tonumber(a.Name) > tonumber(b.Name)
+			return aName > bName
 		end
 
-		return tonumber(a.Name) < tonumber(b.Name)
+		return aName < bName
 	end)
 
 	return nodes
@@ -1300,10 +1366,11 @@ local function EntityMoveTo(model, cframe, speed)
 				local difference =
 					cframe.Position - pivot.Position
 
-				local unit = difference.Unit
 				local magnitude = difference.Magnitude
 
 				if magnitude > 0.1 then
+					local unit = difference.Unit
+
 					model:PivotTo(
 						pivot +
 						unit *
@@ -1388,15 +1455,21 @@ LocalPlayer.CharacterAdded:Connect(
 -- \\ Main // --
 
 Module.Create = function(self, config)
+	-- FIX: allow nil/non-table configs
+	if typeof(config) ~= "table" then
+		config = {}
+	end
+
 	local newConfig =
 		ApplyConfigDefaults(
 			config,
 			CONST.DEFAULT.CONFIG
 		)
 
+	-- FIX: use merged config instead of raw config
 	newConfig.Movement.Speed =
 		CONST.BASE_ENTITY_SPEED / 100 *
-		config.Movement.Speed
+		(tonumber(newConfig.Movement.Speed) or 100)
 
 	local asset = newConfig.Entity.Asset
 
@@ -1447,7 +1520,7 @@ Module.Create = function(self, config)
 	rootPart.Anchored = true
 	entityModel.PrimaryPart = rootPart
 
-	local name = config.Entity.Name
+	local name = newConfig.Entity.Name
 
 	if typeof(name) == "string" and name ~= "" then
 		entityModel.Name = name
@@ -1473,7 +1546,7 @@ Module.Create = function(self, config)
 
 		SetCallback = function(self, key, callback)
 			assert(
-				typeof(key) == "string" and self.Debug[key],
+				typeof(key) == "string" and self.Debug[key] ~= nil,
 				"Callback key is invalid."
 			)
 
@@ -1493,7 +1566,7 @@ Module.Create = function(self, config)
 					pcall(callback, ...)
 
 				if not success then
-					error(result)
+					warn(result)
 				end
 			end
 		end,
@@ -1561,6 +1634,10 @@ Module.Run = function(self, entity, copyEntity)
 			false
 		)
 
+		return
+	end
+
+	if not entity or not entity.Model then
 		return
 	end
 
@@ -1673,6 +1750,10 @@ Module.Run = function(self, entity, copyEntity)
 		while entity:IsAlive() and task.wait() do
 			if model:GetAttribute("Paused") then
 				continue
+			end
+
+			if not RootPart or not RootPart.Parent then
+				break
 			end
 
 			local origin =
