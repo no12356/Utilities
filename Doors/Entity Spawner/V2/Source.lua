@@ -140,8 +140,9 @@ local CONST = {
 			Entity = {
 				Name = "Template Entity",
 
-				Asset =
-					"https://github.com/RegularVynixu/Utilities/raw/refs/heads/main/Doors/Entity%20Spawner/Assets/Entities/Rush.rbxm",
+				-- No default entity.
+				-- Every entity must provide its own Asset.
+				Asset = nil,
 
 				HeightOffset = 0
 			},
@@ -375,16 +376,51 @@ local function NormalizeConfig(config)
 
 	-- Entity
 
-	if typeof(newConfig.Entity.Name) ~= "string" then
+	if typeof(newConfig.Entity.Name) ~= "string"
+		or newConfig.Entity.Name == ""
+	then
+
 		newConfig.Entity.Name =
 			"Template Entity"
 	end
 
-	if typeof(newConfig.Entity.Asset) ~= "string"
-		and typeof(newConfig.Entity.Asset) ~= "Instance" then
+	-- DO NOT FALL BACK TO RUSH.
+	-- Entity.Asset must explicitly be supplied.
 
-		newConfig.Entity.Asset =
-			CONST.DEFAULT.CONFIG.Entity.Asset
+	local entityAsset =
+		newConfig.Entity.Asset
+
+	if typeof(entityAsset) ~= "string"
+		and typeof(entityAsset) ~= "Instance"
+	then
+
+		error(
+			"Entity.Asset is required for '"
+			.. tostring(newConfig.Entity.Name)
+			.. "'. No default entity will be used."
+		)
+	end
+
+	if typeof(entityAsset) == "string"
+		and entityAsset == ""
+	then
+
+		error(
+			"Entity.Asset cannot be empty for '"
+			.. tostring(newConfig.Entity.Name)
+			.. "'."
+		)
+	end
+
+	if typeof(entityAsset) == "Instance"
+		and not entityAsset:IsA("Model")
+	then
+
+		error(
+			"Entity.Asset must be a Model for '"
+			.. tostring(newConfig.Entity.Name)
+			.. "'."
+		)
 	end
 
 	newConfig.Entity.HeightOffset =
@@ -899,7 +935,8 @@ local function PlayJumpscare(config)
 		return
 	end
 
-	local s = config[2]
+	local s =
+		config[2]
 
 	if typeof(s) ~= "table" then
 		return
@@ -924,7 +961,8 @@ local function PlayJumpscare(config)
 	gui.ResetOnSpawn = false
 	gui.DisplayOrder = 999999
 
-	gui.Parent = CoreGui
+	gui.Parent =
+		CoreGui
 
 	local bg =
 		Instance.new("Frame")
@@ -976,18 +1014,21 @@ local function PlayJumpscare(config)
 
 	if typeof(s.Image1) == "string" then
 		pcall(function()
+
 			local image =
 				LoadCustomAsset(
 					s.Image1
 				)
 
 			if image then
-				face.Image = image
+				face.Image =
+					image
 			end
 		end)
 	end
 
-	face.Parent = gui
+	face.Parent =
+		gui
 
 	local function LoadSound(data)
 		if typeof(data) ~= "table"
@@ -1002,19 +1043,27 @@ local function PlayJumpscare(config)
 		local soundId =
 			tostring(data[1])
 
-		if soundId:match("^rbxassetid://") then
+		if soundId:match(
+			"^rbxassetid://"
+		) then
+
 			sound.SoundId =
 				soundId
+
 		else
+
 			sound.SoundId =
 				"rbxassetid://" .. soundId
 		end
 
 		if typeof(data[2]) == "table" then
+
 			for property, value in pairs(
 				data[2]
 			) do
+
 				pcall(function()
+
 					sound[property] =
 						value
 				end)
@@ -1028,10 +1077,14 @@ local function PlayJumpscare(config)
 	end
 
 	local sound1 =
-		LoadSound(s.Sound1)
+		LoadSound(
+			s.Sound1
+		)
 
 	local sound2 =
-		LoadSound(s.Sound2)
+		LoadSound(
+			s.Sound2
+		)
 
 	-- \\ Tease // --
 
@@ -1185,13 +1238,15 @@ local function PlayJumpscare(config)
 
 	if typeof(s.Image2) == "string" then
 		pcall(function()
+
 			local image =
 				LoadCustomAsset(
 					s.Image2
 				)
 
 			if image then
-				face.Image = image
+				face.Image =
+					image
 			end
 		end)
 	end
@@ -1313,6 +1368,7 @@ local function CrucifixEntity(entity)
 	end
 
 	if not Assets.Repentance then
+
 		model:SetAttribute(
 			"BeingBanished",
 			false
@@ -1411,6 +1467,7 @@ local function CrucifixEntity(entity)
 			tick()
 
 		repeat
+
 			RunService.RenderStepped:Wait()
 
 			if not Sound.Parent then
@@ -1423,6 +1480,7 @@ local function CrucifixEntity(entity)
 	end
 
 	local function fadeOut()
+
 		if not Pentagram.Parent then
 			return
 		end
@@ -1566,6 +1624,7 @@ local function CrucifixEntity(entity)
 	task.delay(
 		2,
 		function()
+
 			if Pentagram.Circle.Parent then
 				Pentagram.Circle:Destroy()
 			end
@@ -2005,6 +2064,7 @@ local function CrucifixEntity(entity)
 	task.delay(
 		5,
 		function()
+
 			if Repentance.Parent then
 				Repentance:Destroy()
 			end
@@ -2031,6 +2091,7 @@ local function IsPlayerProtected()
 end
 
 local function DamagePlayer(entity)
+
 	if not Humanoid
 		or Humanoid.Health <= 0
 		or IsPlayerProtected()
@@ -2074,6 +2135,7 @@ local function DamagePlayer(entity)
 	-- \\ Jumpscare // --
 
 	task.spawn(function()
+
 		PlayJumpscare(
 			config.Jumpscare
 		)
@@ -2089,7 +2151,9 @@ local function DamagePlayer(entity)
 			)
 
 		if deathGui then
+
 			pcall(function()
+
 				deathGui:GetPropertyChangedSignal(
 					"Visible"
 				):Wait()
@@ -2664,8 +2728,24 @@ Module.Create =
 			*
 			newConfig.Movement.Speed
 
+		-- \\ Entity asset // --
+
 		local asset =
 			newConfig.Entity.Asset
+
+		if asset == nil
+			or (
+				typeof(asset) == "string"
+				and asset == ""
+			)
+		then
+
+			error(
+				"Entity.Asset is required for '"
+				.. tostring(newConfig.Entity.Name)
+				.. "'."
+			)
+		end
 
 		local success = false
 		local entityModel
@@ -2676,6 +2756,14 @@ Module.Create =
 
 				success = true
 				entityModel = asset
+
+			else
+
+				error(
+					"Entity.Asset for '"
+					.. tostring(newConfig.Entity.Name)
+					.. "' must be a Model."
+				)
 			end
 
 		elseif typeof(asset) == "string" then
@@ -2700,12 +2788,20 @@ Module.Create =
 					if not instance:IsA("Model") then
 
 						error(
-							"Entity model Instance invalid, expected Model"
+							"Entity asset must be a Model."
 						)
 					end
 
 					return instance
 				end)
+
+		else
+
+			error(
+				"Invalid Entity.Asset for '"
+				.. tostring(newConfig.Entity.Name)
+				.. "'."
+			)
 		end
 
 		if not (
@@ -2714,11 +2810,11 @@ Module.Create =
 			and entityModel:IsA("Model")
 		) then
 
-			warn(
-				"Failed to create entity: invalid entity asset."
+			error(
+				"Failed to create entity '"
+				.. tostring(newConfig.Entity.Name)
+				.. "': the supplied Entity.Asset could not be loaded as a Model."
 			)
-
-			return
 		end
 
 		local rootPart =
@@ -2730,11 +2826,11 @@ Module.Create =
 
 		if not rootPart then
 
-			warn(
-				"Failed to create entity: no BasePart found."
+			error(
+				"Failed to create entity '"
+				.. tostring(newConfig.Entity.Name)
+				.. "': no BasePart was found in the supplied Model."
 			)
-
-			return
 		end
 
 		rootPart.Anchored = true
@@ -2982,6 +3078,31 @@ Module.Run =
 				GetSortedRooms()
 
 			if #rooms <= 0 then
+
+				model:SetAttribute(
+					"Running",
+					false
+				)
+
+				local i =
+					table.find(
+						self.ActiveEntities,
+						entity
+					)
+
+				if i then
+					table.remove(
+						self.ActiveEntities,
+						i
+					)
+				end
+
+				warn(
+					"Failed to run entity '"
+					.. tostring(config.Entity.Name)
+					.. "': no rooms are currently available."
+				)
+
 				return
 			end
 
@@ -3061,6 +3182,7 @@ Module.Run =
 
 				pcall(
 					function()
+
 						Modules.Module_Events.flicker(
 							currentRoom,
 							config.Lights.Flicker.Duration
@@ -3070,6 +3192,7 @@ Module.Run =
 			end
 
 			if config.Earthquake.Enabled then
+
 				task.spawn(
 					Earthquake
 				)
@@ -3242,6 +3365,7 @@ Module.Run =
 
 										pcall(
 											function()
+
 												Modules.Module_Events.shatter(
 													room
 												)
@@ -3252,6 +3376,7 @@ Module.Run =
 
 										pcall(
 											function()
+
 												FixRoomLights(
 													room
 												)
@@ -3385,6 +3510,7 @@ Module.Run =
 							local cloned = {}
 
 							for i = 1, 4 do
+
 								cloned[i] =
 									camShake.Values[i]
 							end
@@ -3672,7 +3798,7 @@ Module.Run =
 				end
 
 				-- Do NOT return here.
-				-- The old version could leave Blitz alive forever.
+				-- Blitz continues after the rebound section.
 
 				if entity:IsAlive()
 					and config.Rebounding.Enabled
