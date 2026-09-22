@@ -2792,7 +2792,6 @@ LastRespawn =
 		)
 		or 5
 	)
-
 LocalPlayer.CharacterAdded:Connect(
 	OnCharacterAdded
 )
@@ -2800,7 +2799,7 @@ LocalPlayer.CharacterAdded:Connect(
 -- \\ Main // --
 
 Module.Create =
-	function(self, config)
+	function(config)
 
 		local newConfig =
 			NormalizeConfig(config)
