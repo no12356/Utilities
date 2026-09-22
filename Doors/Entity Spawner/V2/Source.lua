@@ -1089,10 +1089,10 @@ local function PlayJumpscare(config)
 
 	gui.Name = "JumpscareGui"
 	gui.IgnoreGuiInset = true
-	gui.ZIndexBehavior =
-		Enum.ZIndexBehavior.Sibling
 	gui.ResetOnSpawn = false
 	gui.DisplayOrder = 999999
+	gui.ZIndexBehavior =
+		Enum.ZIndexBehavior.Sibling
 
 	bg.Name = "Background"
 	bg.BackgroundColor3 =
@@ -1108,13 +1108,16 @@ local function PlayJumpscare(config)
 	face.BackgroundTransparency = 1
 	face.Position =
 		UDim2.new(0.5, 0, 0.5, 0)
-	face.ResampleMode =
-		Enum.ResamplerMode.Pixelated
 	face.Size =
 		UDim2.new(0, 150, 0, 150)
 	face.Image =
 		image1 or ""
 	face.ZIndex = 1000
+
+	pcall(function()
+		face.ResampleMode =
+			Enum.ResamplerMode.Pixelated
+	end)
 
 	face.Parent = bg
 	bg.Parent = gui
@@ -1129,23 +1132,45 @@ local function PlayJumpscare(config)
 	local maxTeaseSize =
 		absHeight / 2.5
 
+	-- \\ Tease // --
+
 	local teaseConfig =
 		s.Tease
 
 	if typeof(teaseConfig) == "table"
-		and teaseConfig[1]
+		and teaseConfig[1] == true
 	then
+
+		local min =
+			math.max(
+				1,
+				math.floor(
+					tonumber(teaseConfig.Min)
+					or 1
+				)
+			)
+
+		local max =
+			math.max(
+				min,
+				math.floor(
+					tonumber(teaseConfig.Max)
+					or 5
+				)
+			)
+
 		local teaseAmount =
 			math.random(
-				teaseConfig.Min,
-				teaseConfig.Max
+				min,
+				max
 			)
 
 		if sound1 then
 			sound1:Play()
 		end
 
-		for _ = teaseConfig.Min, teaseAmount do
+		for _ = min, teaseAmount do
+
 			task.wait(
 				math.random(100, 200) / 100
 			)
@@ -1170,20 +1195,26 @@ local function PlayJumpscare(config)
 		)
 	end
 
-	local flashing =
-		s.Flashing
+	-- \\ Flashing // --
 
-	if typeof(flashing) == "table"
-		and flashing[1]
+	if typeof(s.Flashing) == "table"
+		and s.Flashing[1] == true
 	then
+
 		task.spawn(function()
+
 			while gui.Parent do
+
 				bg.BackgroundColor3 =
-					flashing[2]
+					s.Flashing[2]
 
 				task.wait(
 					math.random(25, 100) / 1000
 				)
+
+				if not gui.Parent then
+					break
+				end
 
 				bg.BackgroundColor3 =
 					Color3.new(0, 0, 0)
@@ -1195,12 +1226,17 @@ local function PlayJumpscare(config)
 		end)
 	end
 
-	if s.Shake then
+	-- \\ Shake // --
+
+	if s.Shake == true then
+
 		task.spawn(function()
+
 			local origin =
 				face.Position
 
 			while gui.Parent do
+
 				face.Position =
 					origin +
 					UDim2.new(
@@ -1218,6 +1254,8 @@ local function PlayJumpscare(config)
 		end)
 	end
 
+	-- \\ Image 2 + Sound 2 // --
+
 	face.Image =
 		image2 or image1 or ""
 
@@ -1232,6 +1270,8 @@ local function PlayJumpscare(config)
 	if sound2 then
 		sound2:Play()
 	end
+
+	-- \\ Zoom // --
 
 	TS:Create(
 		face,
@@ -1251,235 +1291,10 @@ local function PlayJumpscare(config)
 
 	task.wait(0.75)
 
-	if gui then
-		gui:Destroy()
-	end
-
-	if sound1 then
-		sound1:Destroy()
-	end
-
-	if sound2 then
-		sound2:Destroy()
-	end
-end
--- \\ Tease // --
-
-	if typeof(s.Tease) == "table"
-		and s.Tease[1] == true
-	then
-
-		local min =
-			math.max(
-				1,
-				math.floor(
-					tonumber(
-						s.Tease.Min
-					)
-					or 1
-				)
-			)
-
-		local max =
-			math.max(
-				min,
-				math.floor(
-					tonumber(
-						s.Tease.Max
-					)
-					or 5
-				)
-			)
-
-		local count =
-			math.random(
-				min,
-				max
-			)
-
-		for i = 1, count do
-
-			if sound1 then
-				sound1:Play()
-			end
-
-			task.wait(
-				math.random(
-					100,
-					200
-				) / 100
-			)
-
-			local size =
-				150 + i * 75
-
-			face.Size =
-				UDim2.fromOffset(
-					size,
-					size
-				)
-		end
-	end
-
-	-- \\ Flashing // --
-
-	local flashThread
-
-	if typeof(s.Flashing) == "table"
-		and s.Flashing[1] == true
-	then
-
-		local flashColor =
-			typeof(s.Flashing[2]) == "Color3"
-			and s.Flashing[2]
-			or Color3.new(
-				1,
-				1,
-				1
-			)
-
-		flashThread =
-			task.spawn(function()
-
-				while gui.Parent do
-
-					bg.BackgroundColor3 =
-						flashColor
-
-					task.wait(
-						math.random(
-							25,
-							100
-						) / 1000
-					)
-
-					if not gui.Parent then
-						break
-					end
-
-					bg.BackgroundColor3 =
-						Color3.new(
-							0,
-							0,
-							0
-						)
-
-					task.wait(
-						math.random(
-							25,
-							100
-						) / 1000
-					)
-				end
-			end)
-	end
-
-	-- \\ Shake // --
-
-	local shakeConnection
-
-	if s.Shake == true then
-
-		shakeConnection =
-			RunService.RenderStepped:Connect(
-				function()
-
-					if not face.Parent then
-						return
-					end
-
-					face.Position =
-						UDim2.new(
-							0.5,
-							math.random(
-								-35,
-								35
-							),
-							0.5,
-							math.random(
-								-10,
-								10
-							)
-						)
-
-					face.Rotation =
-						math.random(
-							-5,
-							5
-						)
-				end
-			)
-	end
-
-	-- \\ Image 2 + Sound 2 // --
-
-	if typeof(s.Image2) == "string" then
-		pcall(function()
-
-			local image =
-				LoadCustomAsset(
-					s.Image2
-				)
-
-			if image then
-				face.Image =
-					image
-			end
-		end)
-	end
-
-	if sound2 then
-		sound2:Play()
-	end
-
-	-- \\ Zoom // --
-
-	local camera =
-		workspace.CurrentCamera
-
-	local viewportHeight =
-		camera
-		and camera.ViewportSize.Y
-		or 1080
-
-	local zoomSize =
-		viewportHeight * 3
-
-	local zoomTween =
-		TweenService:Create(
-			face,
-
-			TweenInfo.new(
-				1.5,
-				Enum.EasingStyle.Linear,
-				Enum.EasingDirection.Out
-			),
-
-			{
-				Size =
-					UDim2.fromOffset(
-						zoomSize,
-						zoomSize
-					),
-
-				ImageTransparency = 0
-			}
-		)
-
-	zoomTween:Play()
-
-	task.wait(1.5)
-
 	-- \\ Cleanup // --
 
-	if shakeConnection then
-		shakeConnection:Disconnect()
-	end
-
-	if flashThread then
-		task.cancel(
-			flashThread
-		)
+	if gui then
+		gui:Destroy()
 	end
 
 	if sound1 then
@@ -1490,10 +1305,6 @@ end
 	if sound2 then
 		sound2:Stop()
 		sound2:Destroy()
-	end
-
-	if gui then
-		gui:Destroy()
 	end
 end
 
