@@ -2075,10 +2075,10 @@ local function DamagePlayer(entity)
 	)
 
 	if newHealth ~= 0 then
-		return
-	end
+	return
+end
 
-	-- \\ Jumpscare // --
+-- \\ Jumpscare // --
 
 if not Humanoid:GetAttribute("VynixuJumpscarePlayed") then
 	Humanoid:SetAttribute(
@@ -2086,12 +2086,10 @@ if not Humanoid:GetAttribute("VynixuJumpscarePlayed") then
 		true
 	)
 
-	task.spawn(function()
-		PlayJumpscare(config.Jumpscare)
-	end)
+	PlayJumpscare(config.Jumpscare)
 end
 
-	-- \\ Death hints // --
+-- \\ Death hints // --
 
 	if #config.Death.Hints > 0 then
 
