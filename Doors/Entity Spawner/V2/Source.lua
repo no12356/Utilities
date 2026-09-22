@@ -1012,7 +1012,13 @@ end
 
 -- \\ Jumpscare // --
 
+local JumpscarePlaying = false
+
 local function PlayJumpscare(config)
+	if JumpscarePlaying then
+		return
+	end
+
 	if typeof(config) ~= "table"
 		or config[1] ~= true
 	then
@@ -1025,18 +1031,16 @@ local function PlayJumpscare(config)
 		return
 	end
 
-	local oldGui =
-		CoreGui:FindFirstChild("JumpscareGui")
+	JumpscarePlaying = true
+
+	local oldGui = CoreGui:FindFirstChild("JumpscareGui")
 
 	if oldGui then
 		oldGui:Destroy()
 	end
 
-	local image1 =
-		LoadCustomAsset(s.Image1)
-
-	local image2 =
-		LoadCustomAsset(s.Image2)
+	local image1 = LoadCustomAsset(s.Image1)
+	local image2 = LoadCustomAsset(s.Image2)
 
 	local function LoadJumpscareSound(data)
 		if typeof(data) ~= "table"
@@ -1045,11 +1049,9 @@ local function PlayJumpscare(config)
 			return nil
 		end
 
-		local sound =
-			Instance.new("Sound")
+		local sound = Instance.new("Sound")
 
-		local soundId =
-			tostring(data[1])
+		local soundId = tostring(data[1])
 
 		if soundId:find("rbxasset://") then
 			sound.SoundId = soundId
@@ -1072,105 +1074,74 @@ local function PlayJumpscare(config)
 		return sound
 	end
 
-	local sound1 =
-		LoadJumpscareSound(s.Sound1)
+	local sound1 = LoadJumpscareSound(s.Sound1)
+	local sound2 = LoadJumpscareSound(s.Sound2)
 
-	local sound2 =
-		LoadJumpscareSound(s.Sound2)
-
-	local gui =
-		Instance.new("ScreenGui")
-
-	local bg =
-		Instance.new("Frame")
-
-	local face =
-		Instance.new("ImageLabel")
+	local gui = Instance.new("ScreenGui")
+	local bg = Instance.new("Frame")
+	local face = Instance.new("ImageLabel")
 
 	gui.Name = "JumpscareGui"
 	gui.IgnoreGuiInset = true
 	gui.ResetOnSpawn = false
 	gui.DisplayOrder = 999999
-	gui.ZIndexBehavior =
-		Enum.ZIndexBehavior.Sibling
+	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 	bg.Name = "Background"
-	bg.BackgroundColor3 =
-		Color3.new(0, 0, 0)
+	bg.BackgroundColor3 = Color3.new(0, 0, 0)
 	bg.BorderSizePixel = 0
-	bg.Size =
-		UDim2.new(1, 0, 1, 0)
+	bg.Size = UDim2.new(1, 0, 1, 0)
 	bg.ZIndex = 999
 
 	face.Name = "Face"
-	face.AnchorPoint =
-		Vector2.new(0.5, 0.5)
+	face.AnchorPoint = Vector2.new(0.5, 0.5)
 	face.BackgroundTransparency = 1
-	face.Position =
-		UDim2.new(0.5, 0, 0.5, 0)
-	face.Size =
-		UDim2.new(0, 150, 0, 150)
-	face.Image =
-		image1 or ""
+	face.Position = UDim2.new(0.5, 0, 0.5, 0)
+	face.Size = UDim2.new(0, 150, 0, 150)
+	face.Image = image1 or ""
 	face.ZIndex = 1000
 
 	pcall(function()
-		face.ResampleMode =
-			Enum.ResamplerMode.Pixelated
+		face.ResampleMode = Enum.ResamplerMode.Pixelated
 	end)
 
 	face.Parent = bg
 	bg.Parent = gui
 	gui.Parent = CoreGui
 
-	local absHeight =
-		gui.AbsoluteSize.Y
-
-	local minTeaseSize =
-		absHeight / 5
-
-	local maxTeaseSize =
-		absHeight / 2.5
+	local absHeight = gui.AbsoluteSize.Y
+	local minTeaseSize = absHeight / 5
+	local maxTeaseSize = absHeight / 2.5
 
 	-- \\ Tease // --
 
-	local teaseConfig =
-		s.Tease
+	local teaseConfig = s.Tease
 
 	if typeof(teaseConfig) == "table"
 		and teaseConfig[1] == true
 	then
 
-		local min =
-			math.max(
-				1,
-				math.floor(
-					tonumber(teaseConfig.Min)
-					or 1
-				)
+		local min = math.max(
+			1,
+			math.floor(
+				tonumber(teaseConfig.Min) or 1
 			)
+		)
 
-		local max =
-			math.max(
-				min,
-				math.floor(
-					tonumber(teaseConfig.Max)
-					or 5
-				)
+		local max = math.max(
+			min,
+			math.floor(
+				tonumber(teaseConfig.Max) or 5
 			)
+		)
 
-		local teaseAmount =
-			math.random(
-				min,
-				max
-			)
+		local teaseAmount = math.random(min, max)
 
 		if sound1 then
 			sound1:Play()
 		end
 
 		for _ = min, teaseAmount do
-
 			task.wait(
 				math.random(100, 200) / 100
 			)
@@ -1179,15 +1150,12 @@ local function PlayJumpscare(config)
 				(maxTeaseSize - minTeaseSize)
 				/ teaseAmount
 
-			face.Size =
-				UDim2.new(
-					0,
-					face.AbsoluteSize.X
-						+ growFactor,
-					0,
-					face.AbsoluteSize.Y
-						+ growFactor
-				)
+			face.Size = UDim2.new(
+				0,
+				face.AbsoluteSize.X + growFactor,
+				0,
+				face.AbsoluteSize.Y + growFactor
+			)
 		end
 
 		task.wait(
@@ -1202,11 +1170,8 @@ local function PlayJumpscare(config)
 	then
 
 		task.spawn(function()
-
 			while gui.Parent do
-
-				bg.BackgroundColor3 =
-					s.Flashing[2]
+				bg.BackgroundColor3 = s.Flashing[2]
 
 				task.wait(
 					math.random(25, 100) / 1000
@@ -1229,14 +1194,10 @@ local function PlayJumpscare(config)
 	-- \\ Shake // --
 
 	if s.Shake == true then
-
 		task.spawn(function()
-
-			local origin =
-				face.Position
+			local origin = face.Position
 
 			while gui.Parent do
-
 				face.Position =
 					origin +
 					UDim2.new(
@@ -1277,21 +1238,18 @@ local function PlayJumpscare(config)
 		face,
 		TweenInfo.new(0.75),
 		{
-			Size =
-				UDim2.new(
-					0,
-					absHeight * 3,
-					0,
-					absHeight * 3
-				),
+			Size = UDim2.new(
+				0,
+				absHeight * 3,
+				0,
+				absHeight * 3
+			),
 
 			ImageTransparency = 0.5
 		}
 	):Play()
 
 	task.wait(0.75)
-
-	-- \\ Cleanup // --
 
 	if gui then
 		gui:Destroy()
