@@ -1109,6 +1109,18 @@ local image2 = ""
 	bg.Parent = gui
 	gui.Parent = CoreGui
 
+task.spawn(function()
+	image1 = LoadCustomAsset(s.Image1)
+
+	if gui.Parent and image1 then
+		face.Image = image1
+	end
+end)
+
+task.spawn(function()
+	image2 = LoadCustomAsset(s.Image2)
+end)
+
 	local absHeight = gui.AbsoluteSize.Y
 	local minTeaseSize = absHeight / 5
 	local maxTeaseSize = absHeight / 2.5
