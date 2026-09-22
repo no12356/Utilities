@@ -2086,11 +2086,9 @@ if not LocalPlayer:GetAttribute("VynixuJumpscarePlayed") then
 		true
 	)
 
-	task.spawn(function()
-		PlayJumpscare(
-			config.Jumpscare
-		)
-	end)
+	PlayJumpscare(
+		config.Jumpscare
+	)
 end
 
 	-- \\ Death hints // --
