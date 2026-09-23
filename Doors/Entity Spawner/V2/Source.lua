@@ -1018,7 +1018,7 @@ end
 
 local function PlayJumpscare(config)
 
-	if JumpscarePlaying then
+	if JumpscarePlayed then
 		return
 	end
 
@@ -1034,7 +1034,7 @@ local function PlayJumpscare(config)
 		return
 	end
 
-	JumpscarePlaying = true
+	JumpscarePlayed = true
 
 	local image1 = ""
 	local image2 = ""
@@ -1277,7 +1277,6 @@ end)
 		sound2:Destroy()
 	end
 
-JumpscarePlaying = false
 end
 
 -- \\ Crucifix // --
@@ -2094,18 +2093,11 @@ end
 
 -- \\ Jumpscare // --
 
-if not Humanoid:GetAttribute("VynixuJumpscarePlayed") then
-	Humanoid:SetAttribute(
-		"VynixuJumpscarePlayed",
-		true
-	)
-
 	task.spawn(function()
 		PlayJumpscare(
 			config.Jumpscare
 		)
 	end)
-end
 
 -- \\ Death hints // --
 
