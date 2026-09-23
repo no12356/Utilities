@@ -3,7 +3,7 @@ local JumpscarePlayed = false
 
 --[[
 	Vynixu Entity Spawner V2
-	Fixed + Jumpscare
+	Fixed + Jumpscare + Nightmare Rush/Ambush
 ]]
 
 if getgenv().VynixuEntitySpawnerV2 then
@@ -57,6 +57,20 @@ local GameStats =
 
 local CurrentRooms =
 	workspace:WaitForChild("CurrentRooms")
+
+-- \\ Nightmare assets // --
+
+local NIGHTMARE_RUSH_ASSET =
+	"rbxassetid://11179883020"
+
+local NIGHTMARE_AMBUSH_ASSET =
+	"rbxassetid://11202198283"
+
+local NIGHTMARE_RUSH_TEXTURE =
+	"rbxassetid://10888024887"
+
+local NIGHTMARE_AMBUSH_TEXTURE =
+	"rbxassetid://10826375579"
 
 local Assets = {
 	Repentance =
@@ -143,8 +157,6 @@ local CONST = {
 			Entity = {
 				Name = "Template Entity",
 
-				-- No default entity.
-				-- Every entity must provide its own Asset.
 				Asset = nil,
 
 				HeightOffset = 0
@@ -174,6 +186,8 @@ local CONST = {
 
 					Image2 =
 						"rbxassetid://11417375410",
+
+					Size = 0.6,
 
 					Shake = true,
 
@@ -235,12 +249,14 @@ local CONST = {
 
 			CameraShake = {
 				Enabled = true,
+
 				Values = {
 					1.5,
 					20,
 					0.1,
 					1
 				},
+
 				Range = 100
 			},
 
@@ -254,12 +270,14 @@ local CONST = {
 
 			Death = {
 				Type = "Guiding",
+
 				Hints = {
 					"Death",
 					"Hints",
 					"Go",
 					"Here"
 				},
+
 				Cause = ""
 			}
 		},
@@ -314,6 +332,7 @@ local Module = {
 -- \\ Utility // --
 
 local function CloneTable(tbl)
+
 	if typeof(tbl) ~= "table" then
 		return tbl
 	end
@@ -321,10 +340,16 @@ local function CloneTable(tbl)
 	local new = {}
 
 	for key, value in next, tbl do
+
 		if typeof(value) == "table" then
-			new[key] = CloneTable(value)
+
+			new[key] =
+				CloneTable(value)
+
 		else
-			new[key] = value
+
+			new[key] =
+				value
 		end
 	end
 
@@ -332,6 +357,7 @@ local function CloneTable(tbl)
 end
 
 local function ApplyConfigDefaults(tbl, defaults)
+
 	if typeof(tbl) ~= "table" then
 		tbl = {}
 	end
@@ -345,13 +371,10 @@ local function ApplyConfigDefaults(tbl, defaults)
 
 	for key, value in next, defaults do
 
-		-- Never insert nil defaults.
-		-- This prevents Entity.Asset from
-		-- being accidentally processed as nil.
-
 		if new[key] == nil then
 
 			if value ~= nil then
+
 				new[key] =
 					CloneTable(value)
 			end
@@ -376,6 +399,7 @@ end
 local function NormalizeConfig(config)
 
 	if typeof(config) ~= "table" then
+
 		error(
 			"Entity configuration must be a table."
 		)
@@ -400,9 +424,6 @@ local function NormalizeConfig(config)
 		newConfig.Entity.Name =
 			"Template Entity"
 	end
-
-	-- DO NOT FALL BACK TO RUSH.
-	-- Entity.Asset must explicitly be supplied.
 
 	local entityAsset =
 		newConfig.Entity.Asset
@@ -573,6 +594,7 @@ local function NormalizeConfig(config)
 		)
 
 	if typeof(newConfig.CameraShake.Values) ~= "table" then
+
 		newConfig.CameraShake.Values =
 			CloneTable(
 				CONST.DEFAULT.CONFIG.CameraShake.Values
@@ -580,6 +602,7 @@ local function NormalizeConfig(config)
 	end
 
 	for i = 1, 4 do
+
 		newConfig.CameraShake.Values[i] =
 			tonumber(
 				newConfig.CameraShake.Values[i]
@@ -590,6 +613,7 @@ local function NormalizeConfig(config)
 	-- Jumpscare
 
 	if typeof(newConfig.Jumpscare) ~= "table" then
+
 		newConfig.Jumpscare =
 			CloneTable(
 				CONST.DEFAULT.CONFIG.Jumpscare
@@ -600,6 +624,7 @@ local function NormalizeConfig(config)
 		newConfig.Jumpscare[1] == true
 
 	if typeof(newConfig.Jumpscare[2]) ~= "table" then
+
 		newConfig.Jumpscare[2] =
 			CloneTable(
 				CONST.DEFAULT.CONFIG.Jumpscare[2]
@@ -612,7 +637,17 @@ local function NormalizeConfig(config)
 	jumpscare.Shake =
 		jumpscare.Shake == true
 
+	jumpscare.Size =
+		math.max(
+			0.05,
+			tonumber(
+				jumpscare.Size
+			)
+			or 0.6
+		)
+
 	if typeof(jumpscare.Flashing) ~= "table" then
+
 		jumpscare.Flashing =
 			CloneTable(
 				CONST.DEFAULT.CONFIG.Jumpscare[2].Flashing
@@ -620,6 +655,7 @@ local function NormalizeConfig(config)
 	end
 
 	if typeof(jumpscare.Tease) ~= "table" then
+
 		jumpscare.Tease =
 			CloneTable(
 				CONST.DEFAULT.CONFIG.Jumpscare[2].Tease
@@ -700,6 +736,7 @@ end
 -- \\ Character // --
 
 local function OnCharacterAdded(char)
+
 	LastRespawn = tick()
 
 	Character = char
@@ -708,8 +745,8 @@ local function OnCharacterAdded(char)
 		char:WaitForChild("Humanoid")
 
 	JumpscarePlayed = false
-	
-RootPart =
+
+	RootPart =
 		char:FindFirstChild("HumanoidRootPart")
 		or char.PrimaryPart
 		or char:FindFirstChildWhichIsA(
@@ -731,12 +768,14 @@ end
 -- \\ Rooms // --
 
 local function GetSortedRooms()
+
 	local rooms =
 		CurrentRooms:GetChildren()
 
 	table.sort(
 		rooms,
 		function(a, b)
+
 			return
 				(
 					tonumber(a.Name)
@@ -754,6 +793,7 @@ local function GetSortedRooms()
 end
 
 local function GetCurrentRoom(latest)
+
 	local rooms =
 		GetSortedRooms()
 
@@ -769,6 +809,7 @@ local function GetCurrentRoom(latest)
 		)
 
 	if currentRoom then
+
 		return CurrentRooms:FindFirstChild(
 			tostring(currentRoom)
 		)
@@ -778,9 +819,12 @@ local function GetCurrentRoom(latest)
 end
 
 local function GetRoomAtPoint(vector3)
+
 	local whitelist = {}
 
-	for _, room in next, CurrentRooms:GetChildren() do
+	for _, room in next,
+		CurrentRooms:GetChildren() do
+
 		local p =
 			room:FindFirstChild(
 				room.Name
@@ -834,14 +878,18 @@ local function GetRoomAtPoint(vector3)
 end
 
 local function FixRoomLights(room)
+
 	local roomEntrance =
-		room:FindFirstChild("RoomEntrance")
+		room:FindFirstChild(
+			"RoomEntrance"
+		)
 
 	if not roomEntrance then
 		return
 	end
 
 	if Camera then
+
 		for _, c in next,
 			Camera:GetChildren() do
 
@@ -868,6 +916,7 @@ local function FixRoomLights(room)
 				or d.Name == "Chandelier"
 			)
 		then
+
 			table.insert(
 				stuff,
 				d
@@ -878,7 +927,9 @@ local function FixRoomLights(room)
 	local random =
 		Random.new()
 
-	for _, v in next, stuff do
+	for _, v in next,
+		stuff do
+
 		if v:GetAttribute("Shattered") then
 
 			local primary =
@@ -980,6 +1031,7 @@ local function FixRoomLights(room)
 					end
 
 					if v.Parent then
+
 						v:SetAttribute(
 							"Shattered",
 							nil
@@ -994,6 +1046,7 @@ end
 -- \\ Tools // --
 
 local function HasEquipped(name)
+
 	if not Character then
 		return false
 	end
@@ -1009,6 +1062,7 @@ local function HasEquipped(name)
 			or tool:HasTag(name)
 		)
 	then
+
 		return true, tool
 	end
 
@@ -1017,17 +1071,20 @@ end
 
 -- \\ Jumpscare // --
 
-local function PlayJumpscare(config)
+local function PlayJumpscare(config, preloadedImages)
 
 	if JumpscarePlayed then
 		return
 	end
 
-	if typeof(config) ~= "table" or config[1] ~= true then
+	if typeof(config) ~= "table"
+		or config[1] ~= true
+	then
 		return
 	end
 
-	local s = config[2]
+	local s =
+		config[2]
 
 	if typeof(s) ~= "table" then
 		return
@@ -1035,143 +1092,282 @@ local function PlayJumpscare(config)
 
 	JumpscarePlayed = true
 
-local image1 = PreloadedJumpscareImages.Image1
-local image2 = PreloadedJumpscareImages.Image2
+	local image1 =
+		preloadedImages
+		and preloadedImages.Image1
+
+	local image2 =
+		preloadedImages
+		and preloadedImages.Image2
 
 	local function LoadJumpscareSound(data)
+
 		if typeof(data) ~= "table"
 			or data[1] == nil
 		then
+
 			return nil
 		end
 
-		local sound = Instance.new("Sound")
+		local sound =
+			Instance.new("Sound")
 
-		local soundId = tostring(data[1])
+		local soundId =
+			tostring(data[1])
 
 		if soundId:find("rbxasset://") then
-			sound.SoundId = soundId
-		else
+
 			sound.SoundId =
-				"rbxassetid://" ..
-				soundId:gsub("%D", "")
+				soundId
+
+		else
+
+			sound.SoundId =
+				"rbxassetid://"
+				.. soundId:gsub(
+					"%D",
+					""
+				)
 		end
 
 		if typeof(data[2]) == "table" then
-			for property, value in next, data[2] do
+
+			for property, value in
+				next,
+				data[2] do
+
 				pcall(function()
 					sound[property] = value
 				end)
 			end
 		end
 
-		sound.Parent = workspace
+		sound.Parent =
+			workspace
 
 		return sound
 	end
 
 	local sound1 = nil
-local sound2 = nil
+	local sound2 = nil
 
-local gui = Instance.new("ScreenGui")
-local bg = Instance.new("Frame")
-local face = Instance.new("ImageLabel")
+	local gui =
+		Instance.new("ScreenGui")
 
-gui.Name = "JumpscareGui"
-gui.IgnoreGuiInset = true
-gui.ResetOnSpawn = false
-gui.DisplayOrder = 999999
-gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	local bg =
+		Instance.new("Frame")
 
-bg.Name = "Background"
-bg.Size = UDim2.new(1, 0, 1, 0)
-bg.BorderSizePixel = 0
-bg.Size = UDim2.new(1, 0, 1, 0)
-bg.ZIndex = 999
+	local face =
+		Instance.new("ImageLabel")
 
-face.Name = "Face"
-face.AnchorPoint = Vector2.new(0.5, 0.5)
-face.BackgroundTransparency = 1
+	gui.Name =
+		"JumpscareGui"
 
-face.Size = UDim2.fromScale(s.Size or 0.6, s.Size or 0.6)
-face.Position = UDim2.fromScale(0.5, 0.5)
+	gui.IgnoreGuiInset =
+		true
 
-face.ScaleType = Enum.ScaleType.Fit
-face.ZIndex = 1000
-pcall(function()
-	face.ResampleMode = Enum.ResamplerMode.Pixelated
-end)
+	gui.ResetOnSpawn =
+		false
 
-face.Parent = bg
-bg.Parent = gui
-gui.Parent = CoreGui
+	gui.DisplayOrder =
+		999999
 
-sound1 = LoadJumpscareSound(s.Sound1)
-sound2 = LoadJumpscareSound(s.Sound2)
+	gui.ZIndexBehavior =
+		Enum.ZIndexBehavior.Sibling
 
-task.spawn(function()
-	image1 = LoadCustomAsset(s.Image1)
+	bg.Name =
+		"Background"
 
-	if gui.Parent and image1 then
-		face.Image = image1
+	bg.Size =
+		UDim2.new(
+			1,
+			0,
+			1,
+			0
+		)
+
+	bg.BorderSizePixel =
+		0
+
+	bg.BackgroundColor3 =
+		Color3.new(
+			0,
+			0,
+			0
+		)
+
+	bg.ZIndex =
+		999
+
+	face.Name =
+		"Face"
+
+	face.AnchorPoint =
+		Vector2.new(
+			0.5,
+			0.5
+		)
+
+	face.BackgroundTransparency =
+		1
+
+	face.Size =
+		UDim2.fromScale(
+			s.Size or 0.6,
+			s.Size or 0.6
+		)
+
+	face.Position =
+		UDim2.fromScale(
+			0.5,
+			0.5
+		)
+
+	face.ScaleType =
+		Enum.ScaleType.Fit
+
+	face.ZIndex =
+		1000
+
+	pcall(function()
+
+		face.ResampleMode =
+			Enum.ResamplerMode.Pixelated
+	end)
+
+	face.Parent =
+		bg
+
+	bg.Parent =
+		gui
+
+	gui.Parent =
+		CoreGui
+
+	sound1 =
+		LoadJumpscareSound(
+			s.Sound1
+		)
+
+	sound2 =
+		LoadJumpscareSound(
+			s.Sound2
+		)
+
+	if not image1
+		and s.Image1
+	then
+
+		image1 =
+			LoadCustomAsset(
+				s.Image1
+			)
 	end
-end)
 
-task.spawn(function()
-	image2 = LoadCustomAsset(s.Image2)
-end)
+	if not image2
+		and s.Image2
+	then
 
-	local absHeight = gui.AbsoluteSize.Y
-	local minTeaseSize = absHeight / 5
-	local maxTeaseSize = absHeight / 2.5
+		image2 =
+			LoadCustomAsset(
+				s.Image2
+			)
+	end
+
+	if image1 then
+		face.Image =
+			image1
+	end
+
+	local absHeight =
+		gui.AbsoluteSize.Y
+
+	if absHeight <= 0 then
+		absHeight = 1080
+	end
+
+	local minTeaseSize =
+		absHeight / 5
+
+	local maxTeaseSize =
+		absHeight / 2.5
 
 	-- \\ Tease // --
 
-	local teaseConfig = s.Tease
+	local teaseConfig =
+		s.Tease
 
 	if typeof(teaseConfig) == "table"
 		and teaseConfig[1] == true
 	then
 
-		local min = math.max(
-			1,
-			math.floor(
-				tonumber(teaseConfig.Min) or 1
+		local min =
+			math.max(
+				1,
+				math.floor(
+					tonumber(
+						teaseConfig.Min
+					)
+					or 1
+				)
 			)
-		)
 
-		local max = math.max(
-			min,
-			math.floor(
-				tonumber(teaseConfig.Max) or 5
+		local max =
+			math.max(
+				min,
+				math.floor(
+					tonumber(
+						teaseConfig.Max
+					)
+					or 5
+				)
 			)
-		)
 
-		local teaseAmount = math.random(min, max)
+		local teaseAmount =
+			math.random(
+				min,
+				max
+			)
 
 		if sound1 then
 			sound1:Play()
 		end
 
-		for _ = min, teaseAmount do
+		for _ = 1,
+			teaseAmount do
+
 			task.wait(
-				math.random(100, 200) / 100
+				math.random(
+					100,
+					200
+				) / 100
 			)
 
 			local growFactor =
-				(maxTeaseSize - minTeaseSize)
-				/ teaseAmount
+				(
+					maxTeaseSize
+					- minTeaseSize
+				)
+				/
+				teaseAmount
 
-			face.Size = UDim2.new(
-				0,
-				face.AbsoluteSize.X + growFactor,
-				0,
-				face.AbsoluteSize.Y + growFactor
-			)
+			face.Size =
+				UDim2.new(
+					0,
+					face.AbsoluteSize.X
+						+ growFactor,
+
+					0,
+					face.AbsoluteSize.Y
+						+ growFactor
+				)
 		end
 
 		task.wait(
-			math.random(100, 200) / 100
+			math.random(
+				100,
+				200
+			) / 100
 		)
 	end
 
@@ -1182,11 +1378,17 @@ end)
 	then
 
 		task.spawn(function()
+
 			while gui.Parent do
-				bg.BackgroundColor3 = s.Flashing[2]
+
+				bg.BackgroundColor3 =
+					s.Flashing[2]
 
 				task.wait(
-					math.random(25, 100) / 1000
+					math.random(
+						25,
+						100
+					) / 1000
 				)
 
 				if not gui.Parent then
@@ -1194,10 +1396,17 @@ end)
 				end
 
 				bg.BackgroundColor3 =
-					Color3.new(0, 0, 0)
+					Color3.new(
+						0,
+						0,
+						0
+					)
 
 				task.wait(
-					math.random(25, 100) / 1000
+					math.random(
+						25,
+						100
+					) / 1000
 				)
 			end
 		end)
@@ -1206,21 +1415,35 @@ end)
 	-- \\ Shake // --
 
 	if s.Shake == true then
+
 		task.spawn(function()
-			local origin = face.Position
+
+			local origin =
+				face.Position
 
 			while gui.Parent do
+
 				face.Position =
-					origin +
+					origin
+					+
 					UDim2.new(
 						0,
-						math.random(-10, 10),
+						math.random(
+							-10,
+							10
+						),
 						0,
-						math.random(-10, 10)
+						math.random(
+							-10,
+							10
+						)
 					)
 
 				face.Rotation =
-					math.random(-5, 5)
+					math.random(
+						-5,
+						5
+					)
 
 				task.wait()
 			end
@@ -1230,7 +1453,9 @@ end)
 	-- \\ Image 2 + Sound 2 // --
 
 	face.Image =
-		image2 or image1 or ""
+		image2
+		or image1
+		or ""
 
 	face.Size =
 		UDim2.new(
@@ -1248,20 +1473,26 @@ end)
 
 	TS:Create(
 		face,
-		TweenInfo.new(0.75),
+		TweenInfo.new(
+			0.75
+		),
 		{
-			Size = UDim2.new(
-				0,
-				absHeight * 3,
-				0,
-				absHeight * 3
-			),
+			Size =
+				UDim2.new(
+					0,
+					absHeight * 3,
+					0,
+					absHeight * 3
+				),
 
-			ImageTransparency = 0.5
+			ImageTransparency =
+				0.5
 		}
 	):Play()
 
-	task.wait(0.75)
+	task.wait(
+		0.75
+	)
 
 	if gui then
 		gui:Destroy()
@@ -1276,12 +1507,12 @@ end)
 		sound2:Stop()
 		sound2:Destroy()
 	end
-
 end
 
 -- \\ Crucifix // --
 
 local function CrucifixEntity(entity)
+
 	local model =
 		entity.Model
 
@@ -1422,6 +1653,7 @@ local function CrucifixEntity(entity)
 	Sound:Play()
 
 	local function waitUntil(t)
+
 		local startTime =
 			tick()
 
@@ -1521,7 +1753,8 @@ local function CrucifixEntity(entity)
 			or v:IsA("BasePart")
 		then
 
-			v.Color = Color
+			v.Color =
+				Color
 
 		elseif v:IsA("ParticleEmitter")
 			or v:IsA("Beam")
@@ -1631,10 +1864,13 @@ local function CrucifixEntity(entity)
 				shard.CollisionGroup =
 					"NoPlayer"
 
-				shard.CanCollide = true
+				shard.CanCollide =
+					true
 
 				local weld =
-					shard:FindFirstChild("Weld")
+					shard:FindFirstChild(
+						"Weld"
+					)
 
 				if weld then
 					weld:Destroy()
@@ -1942,6 +2178,7 @@ local function CrucifixEntity(entity)
 							})
 
 					elseif d.Name == "Glow" then
+
 						d.Color =
 							color.Value
 					end
@@ -2034,6 +2271,7 @@ end
 -- \\ Damage // --
 
 local function IsPlayerProtected()
+
 	local spawnProtection =
 		tonumber(
 			LocalPlayer:GetAttribute(
@@ -2088,18 +2326,20 @@ local function DamagePlayer(entity)
 	)
 
 	if newHealth ~= 0 then
-	return
-end
+		return
+	end
 
--- \\ Jumpscare // --
+	-- \\ Jumpscare // --
 
 	task.spawn(function()
+
 		PlayJumpscare(
-			config.Jumpscare
+			config.Jumpscare,
+			entity.JumpscareImages
 		)
 	end)
 
--- \\ Death hints // --
+	-- \\ Death hints // --
 
 	if #config.Death.Hints > 0 then
 
@@ -2211,8 +2451,8 @@ end
 
 	local playerStats =
 		GameStats:FindFirstChild(
-			"Player_" ..
-			LocalPlayer.Name
+			"Player_"
+			.. LocalPlayer.Name
 		)
 
 	if playerStats
@@ -2230,6 +2470,7 @@ end
 			)
 
 		if deathCause then
+
 			deathCause.Value =
 				cause
 		end
@@ -2242,6 +2483,7 @@ local function GetNodesFromRoom(
 	room,
 	reversed
 )
+
 	local nodes = {}
 
 	local roomEntrance =
@@ -2254,7 +2496,8 @@ local function GetNodesFromRoom(
 		local n =
 			roomEntrance:Clone()
 
-		n.Name = "0"
+		n.Name =
+			"0"
 
 		n.CFrame -=
 			Vector3.new(
@@ -2263,7 +2506,8 @@ local function GetNodesFromRoom(
 				0
 			)
 
-		nodes[1] = n
+		nodes[1] =
+			n
 	end
 
 	local nodesFolder =
@@ -2304,7 +2548,8 @@ local function GetNodesFromRoom(
 				0
 			)
 
-		nodes[index] = n
+		nodes[index] =
+			n
 	end
 
 	table.sort(
@@ -2331,6 +2576,7 @@ local function GetNodesFromRoom(
 end
 
 local function GetPathfindNodesAmbush(config)
+
 	local pathfindNodes = {}
 
 	local rooms =
@@ -2338,7 +2584,8 @@ local function GetPathfindNodesAmbush(config)
 
 	if config.Movement.Reversed == false then
 
-		for i = 1, #rooms do
+		for i = 1,
+			#rooms do
 
 			local room =
 				rooms[i]
@@ -2354,13 +2601,16 @@ local function GetPathfindNodesAmbush(config)
 
 				pathfindNodes[
 					#pathfindNodes + 1
-				] = node
+				] =
+					node
 			end
 		end
 
 	else
 
-		for i = #rooms, 1, -1 do
+		for i = #rooms,
+			1,
+			-1 do
 
 			local room =
 				rooms[i]
@@ -2376,7 +2626,8 @@ local function GetPathfindNodesAmbush(config)
 
 				pathfindNodes[
 					#pathfindNodes + 1
-				] = node
+				] =
+					node
 			end
 		end
 	end
@@ -2385,6 +2636,7 @@ local function GetPathfindNodesAmbush(config)
 end
 
 local function GetPathfindNodesBlitz(config)
+
 	local nodesToCurrent = {}
 	local nodesToEnd = {}
 
@@ -2423,20 +2675,24 @@ local function GetPathfindNodesBlitz(config)
 
 					nodesToCurrent[
 						#nodesToCurrent + 1
-					] = node
+					] =
+						node
 
 				else
 
 					nodesToEnd[
 						#nodesToEnd + 1
-					] = node
+					] =
+						node
 				end
 			end
 		end
 
 	else
 
-		for i = #rooms, 1, -1 do
+		for i = #rooms,
+			1,
+			-1 do
 
 			local room =
 				rooms[i]
@@ -2460,13 +2716,15 @@ local function GetPathfindNodesBlitz(config)
 
 					nodesToCurrent[
 						#nodesToCurrent + 1
-					] = node
+					] =
+						node
 
 				else
 
 					nodesToEnd[
 						#nodesToEnd + 1
-					] = node
+					] =
+						node
 				end
 			end
 		end
@@ -2482,6 +2740,7 @@ local function EntityMoveTo(
 	cframe,
 	speed
 )
+
 	local reached = false
 	local cancelled = false
 
@@ -2548,8 +2807,12 @@ local function EntityMoveTo(
 		)
 
 	repeat
+
 		RunService.Stepped:Wait()
-	until reached or cancelled
+
+	until
+		reached
+		or cancelled
 
 	return reached
 end
@@ -2557,6 +2820,7 @@ end
 -- \\ Earthquake // --
 
 local function Earthquake()
+
 	if not Assets.Earthquake then
 		return
 	end
@@ -2625,7 +2889,8 @@ local function Earthquake()
 				v9 / 10
 			)
 
-			v11.Enabled = true
+			v11.Enabled =
+				true
 
 			table.insert(
 				v6,
@@ -2639,7 +2904,8 @@ local function Earthquake()
 	for _, v12 in v6 do
 
 		if v12.Parent then
-			v12.Enabled = false
+			v12.Enabled =
+				false
 		end
 	end
 end
@@ -2667,6 +2933,7 @@ LastRespawn =
 		)
 		or 5
 	)
+
 LocalPlayer.CharacterAdded:Connect(
 	OnCharacterAdded
 )
@@ -2679,35 +2946,43 @@ Module.Create =
 		local newConfig =
 			NormalizeConfig(config)
 
--- \\ Preload jumpscare images // --
+		-- \\ Preload jumpscare images // --
 
-PreloadedJumpscareImages = {
-	Image1 = nil,
-	Image2 = nil
-}
+		local PreloadedJumpscareImages = {
+			Image1 = nil,
+			Image2 = nil
+		}
 
-if typeof(newConfig.Jumpscare) == "table"
-	and newConfig.Jumpscare[1] == true
-	and typeof(newConfig.Jumpscare[2]) == "table"
-then
+		if typeof(newConfig.Jumpscare) == "table"
+			and newConfig.Jumpscare[1] == true
+			and typeof(newConfig.Jumpscare[2]) == "table"
+		then
 
-	local jumpscareConfig = newConfig.Jumpscare[2]
+			local jumpscareConfig =
+				newConfig.Jumpscare[2]
 
-	task.spawn(function()
-		if jumpscareConfig.Image1 then
-			PreloadedJumpscareImages.Image1 =
-				LoadCustomAsset(jumpscareConfig.Image1)
+			task.spawn(function()
+
+				if jumpscareConfig.Image1 then
+
+					PreloadedJumpscareImages.Image1 =
+						LoadCustomAsset(
+							jumpscareConfig.Image1
+						)
+				end
+			end)
+
+			task.spawn(function()
+
+				if jumpscareConfig.Image2 then
+
+					PreloadedJumpscareImages.Image2 =
+						LoadCustomAsset(
+							jumpscareConfig.Image2
+						)
+				end
+			end)
 		end
-	end)
-
-	task.spawn(function()
-		if jumpscareConfig.Image2 then
-			PreloadedJumpscareImages.Image2 =
-				LoadCustomAsset(jumpscareConfig.Image2)
-		end
-	end)
-
-end
 
 		newConfig.Movement.Speed =
 			CONST.BASE_ENTITY_SPEED
@@ -2729,7 +3004,9 @@ end
 
 			error(
 				"Entity.Asset is required for '"
-				.. tostring(newConfig.Entity.Name)
+				.. tostring(
+					newConfig.Entity.Name
+				)
 				.. "'."
 			)
 		end
@@ -2748,7 +3025,9 @@ end
 
 				error(
 					"Entity.Asset for '"
-					.. tostring(newConfig.Entity.Name)
+					.. tostring(
+						newConfig.Entity.Name
+					)
 					.. "' must be a Model."
 				)
 			end
@@ -2786,7 +3065,9 @@ end
 
 			error(
 				"Invalid Entity.Asset for '"
-				.. tostring(newConfig.Entity.Name)
+				.. tostring(
+					newConfig.Entity.Name
+				)
 				.. "'."
 			)
 		end
@@ -2799,7 +3080,9 @@ end
 
 			error(
 				"Failed to create entity '"
-				.. tostring(newConfig.Entity.Name)
+				.. tostring(
+					newConfig.Entity.Name
+				)
 				.. "': the supplied Entity.Asset could not be loaded as a Model."
 			)
 		end
@@ -2815,12 +3098,15 @@ end
 
 			error(
 				"Failed to create entity '"
-				.. tostring(newConfig.Entity.Name)
+				.. tostring(
+					newConfig.Entity.Name
+				)
 				.. "': no BasePart was found in the supplied Model."
 			)
 		end
 
-		rootPart.Anchored = true
+		rootPart.Anchored =
+			true
 
 		entityModel.PrimaryPart =
 			rootPart
@@ -2858,9 +3144,15 @@ end
 			entityModel
 
 		return {
-			Model = entityModel,
 
-			Config = newConfig,
+			Model =
+				entityModel,
+
+			Config =
+				newConfig,
+
+			JumpscareImages =
+				PreloadedJumpscareImages,
 
 			Debug =
 				CloneTable(
@@ -2880,6 +3172,7 @@ end
 					)
 
 					if key == "OnReachNode" then
+
 						key =
 							"OnReachedNode"
 					end
@@ -2912,6 +3205,7 @@ end
 				)
 
 					if key == "OnReachNode" then
+
 						key =
 							"OnReachedNode"
 					end
@@ -2938,6 +3232,7 @@ end
 
 			IsAlive =
 				function(self)
+
 					return
 						self.Model
 						and self.Model.Parent
@@ -3051,7 +3346,8 @@ Module.Run =
 
 		self.ActiveEntities[
 			#self.ActiveEntities + 1
-		] = entity
+		] =
+			entity
 
 		-- \\ Spawn point // --
 
@@ -3076,6 +3372,7 @@ Module.Run =
 					)
 
 				if i then
+
 					table.remove(
 						self.ActiveEntities,
 						i
@@ -3084,7 +3381,9 @@ Module.Run =
 
 				warn(
 					"Failed to run entity '"
-					.. tostring(config.Entity.Name)
+					.. tostring(
+						config.Entity.Name
+					)
 					.. "': no rooms are currently available."
 				)
 
@@ -3128,6 +3427,7 @@ Module.Run =
 				)
 
 			if i then
+
 				table.remove(
 					self.ActiveEntities,
 					i
@@ -4064,6 +4364,7 @@ if not getgenv()._internal_vynixu_entity_spawner then
 		true
 
 	local function GetAmbient(room)
+
 		return
 			room:GetAttribute(
 				"AmbientOriginal"
@@ -4130,6 +4431,454 @@ if not getgenv()._internal_vynixu_entity_spawner then
 	)
 end
 
+-- \\ Nightmare Rush / Ambush // --
+
+local function ApplyNightmareEffect(
+	model,
+	textureId
+)
+
+	if not model
+		or not model.Parent
+	then
+		return
+	end
+
+	-- Nightmare marker
+
+	if not model:FindFirstChild(
+		"Nightmare"
+	) then
+
+		local marker =
+			Instance.new(
+				"BoolValue"
+			)
+
+		marker.Name =
+			"Nightmare"
+
+		marker.Value =
+			true
+
+		marker.Parent =
+			model
+	end
+
+	-- Nightmare particle
+
+	for _, descendant in
+		model:GetDescendants() do
+
+		if descendant:IsA(
+			"ParticleEmitter"
+		) then
+
+			pcall(function()
+
+				descendant.Texture =
+					textureId
+
+				descendant.Brightness =
+					10
+			end)
+
+			break
+		end
+	end
+end
+
+local function CreateNightmareRush()
+
+	local entity
+
+	local success,
+		result =
+		pcall(function()
+
+			return Module.Create({
+
+				Entity = {
+					Name =
+						"Nightmare Rush",
+
+					Asset =
+						NIGHTMARE_RUSH_ASSET,
+
+					HeightOffset =
+						1
+				},
+
+				Lights = {
+					Flicker = {
+						Enabled = true,
+						Duration = 1
+					},
+
+					Shatter = true,
+					Repair = false
+				},
+
+				CameraShake = {
+					Enabled = true,
+
+					Range = 100,
+
+					Values = {
+						5,
+						15,
+						0.1,
+						1
+					}
+				},
+
+				Movement = {
+					Speed = 850,
+					Delay = 0,
+					Reversed = false
+				},
+
+				Rebounding = {
+					Enabled = false,
+					Type = "Ambush",
+					Min = 1,
+					Max = 1,
+					Delay = 0
+				},
+
+				Damage = {
+					Enabled = true,
+					Range = 100,
+					Amount = 125
+				},
+
+				Jumpscare = {
+					false
+				},
+
+				Crucifixion = {
+					Type = "Guiding",
+					Enabled = true,
+					Range = 100,
+					Resist = false,
+					Break = true
+				},
+
+				Death = {
+					Type = "Guiding",
+
+					Hints = {
+						"You died to Nightmare Rush.",
+						"Nightmare Rush is extremely fast.",
+						"Hide when you hear it."
+					},
+
+					Cause =
+						"Nightmare Rush"
+				}
+			})
+		end)
+
+	if not success then
+
+		warn(
+			"Failed to create Nightmare Rush:",
+			result
+		)
+
+		return
+	end
+
+	entity =
+		result
+
+	if not entity then
+		return
+	end
+
+	entity:SetCallback(
+		"OnSpawned",
+		function()
+
+			ApplyNightmareEffect(
+				entity.Model,
+				NIGHTMARE_RUSH_TEXTURE
+			)
+
+			print(
+				"Nightmare Rush has spawned"
+			)
+		end
+	)
+
+	entity:SetCallback(
+		"OnDespawned",
+		function()
+
+			print(
+				"Nightmare Rush has despawned"
+			)
+		end
+	)
+
+	entity:Run()
+
+	return entity
+end
+
+local function CreateNightmareAmbush()
+
+	local entity
+
+	local success,
+		result =
+		pcall(function()
+
+			return Module.Create({
+
+				Entity = {
+					Name =
+						"Nightmare Ambush",
+
+					Asset =
+						NIGHTMARE_AMBUSH_ASSET,
+
+					HeightOffset =
+						1
+				},
+
+				Lights = {
+					Flicker = {
+						Enabled = true,
+						Duration = 1
+					},
+
+					Shatter = true,
+					Repair = false
+				},
+
+				CameraShake = {
+					Enabled = true,
+
+					Range = 100,
+
+					Values = {
+						5,
+						15,
+						0.1,
+						1
+					}
+				},
+
+				Movement = {
+					Speed = 850,
+					Delay = 0,
+					Reversed = false
+				},
+
+				Rebounding = {
+					Enabled = true,
+					Type = "Ambush",
+					Min = 2,
+					Max = 2,
+					Delay = 2
+				},
+
+				Damage = {
+					Enabled = true,
+					Range = 100,
+					Amount = 125
+				},
+
+				Jumpscare = {
+					false
+				},
+
+				Crucifixion = {
+					Type = "Guiding",
+					Enabled = true,
+					Range = 100,
+					Resist = false,
+					Break = true
+				},
+
+				Death = {
+					Type = "Guiding",
+
+					Hints = {
+						"You died to Nightmare Ambush.",
+						"Nightmare Ambush can rebound.",
+						"Hide when you hear it."
+					},
+
+					Cause =
+						"Nightmare Ambush"
+				}
+			})
+		end)
+
+	if not success then
+
+		warn(
+			"Failed to create Nightmare Ambush:",
+			result
+		)
+
+		return
+	end
+
+	entity =
+		result
+
+	if not entity then
+		return
+	end
+
+	entity:SetCallback(
+		"OnSpawned",
+		function()
+
+			ApplyNightmareEffect(
+				entity.Model,
+				NIGHTMARE_AMBUSH_TEXTURE
+			)
+
+			print(
+				"Nightmare Ambush has spawned"
+			)
+		end
+	)
+
+	entity:SetCallback(
+		"OnDespawned",
+		function()
+
+			print(
+				"Nightmare Ambush has despawned"
+			)
+		end
+	)
+
+	entity:Run()
+
+	return entity
+end
+
+-- \\ Replace native Rush/Ambush // --
+
+local nightmareReplacementConnection =
+	workspace.ChildAdded:Connect(
+		function(instance)
+
+			if instance.Name ==
+				"RushMoving"
+			then
+
+				task.defer(function()
+
+					if not instance.Parent then
+						return
+					end
+
+					-- Prevent this handler
+					-- from reacting twice.
+
+					if instance:GetAttribute(
+						"NightmareReplacement"
+					) then
+						return
+					end
+
+					instance:SetAttribute(
+						"NightmareReplacement",
+						true
+					)
+
+					instance:Destroy()
+
+					CreateNightmareRush()
+				end)
+
+			elseif instance.Name ==
+				"AmbushMoving"
+			then
+
+				task.defer(function()
+
+					if not instance.Parent then
+						return
+					end
+
+					if instance:GetAttribute(
+						"NightmareReplacement"
+					) then
+						return
+					end
+
+					instance:SetAttribute(
+						"NightmareReplacement",
+						true
+					)
+
+					instance:Destroy()
+
+					CreateNightmareAmbush()
+				end)
+			end
+		end
+	)
+
+table.insert(
+	Module.Connections,
+	nightmareReplacementConnection
+)
+
+-- \\ Replace entities that already exist // --
+
+task.defer(function()
+
+	for _, instance in
+		workspace:GetChildren() do
+
+		if instance.Name ==
+			"RushMoving"
+		then
+
+			if not instance:GetAttribute(
+				"NightmareReplacement"
+			) then
+
+				instance:SetAttribute(
+					"NightmareReplacement",
+					true
+				)
+
+				instance:Destroy()
+
+				CreateNightmareRush()
+			end
+
+		elseif instance.Name ==
+			"AmbushMoving"
+		then
+
+			if not instance:GetAttribute(
+				"NightmareReplacement"
+			) then
+
+				instance:SetAttribute(
+					"NightmareReplacement",
+					true
+				)
+
+				instance:Destroy()
+
+				CreateNightmareAmbush()
+			end
+		end
+	end
+end)
+
 -- \\ Module functions // --
 
 Module.Clear =
@@ -4169,8 +4918,11 @@ Module.Unload =
 				nil
 		end
 
-		for i in next, self do
-			self[i] = nil
+		for i in next,
+			self do
+
+			self[i] =
+				nil
 		end
 	end
 
