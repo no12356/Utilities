@@ -2679,6 +2679,31 @@ Module.Create =
 		local newConfig =
 			NormalizeConfig(config)
 
+-- \\ Preload jumpscare images // --
+
+if typeof(newConfig.Jumpscare) == "table"
+	and newConfig.Jumpscare[1] == true
+	and typeof(newConfig.Jumpscare[2]) == "table"
+then
+
+	local jumpscareConfig = newConfig.Jumpscare[2]
+
+	task.spawn(function()
+		if jumpscareConfig.Image1 then
+			pcall(function()
+				LoadCustomAsset(jumpscareConfig.Image1)
+			end)
+		end
+
+		if jumpscareConfig.Image2 then
+			pcall(function()
+				LoadCustomAsset(jumpscareConfig.Image2)
+			end)
+		end
+	end)
+
+end
+
 		newConfig.Movement.Speed =
 			CONST.BASE_ENTITY_SPEED
 			/ 100
