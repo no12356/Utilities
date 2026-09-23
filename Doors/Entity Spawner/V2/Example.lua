@@ -1,13 +1,13 @@
 ---====== Load spawner ======---
 
-local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
+local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/no12356/Utilities/refs/heads/main/Doors/Entity%20Spawner/V2/Source.lua"))()
 
 ---====== Create entity ======---
 
 local entity = spawner.Create({
 	Entity = {
-		Name = "Template Entity",
-		Asset = "https://github.com/RegularVynixu/Utilities/blob/main/Doors%20Entity%20Spawner/Models/Rush.rbxm?raw=true",
+		Name = "Soon To Be Depth",
+		Asset = "https://github.com/no12356/Doors-Hardmode-Remake/raw/main/models/Depth.rbxm",
 		HeightOffset = 0
 	},
 	Lights = {
@@ -24,7 +24,7 @@ local entity = spawner.Create({
 		Values = {1.5, 20, 0.1, 1} -- Magnitude, Roughness, FadeIn, FadeOut
 	},
 	Movement = {
-		Speed = 100,
+		Speed = 300,
 		Delay = 2,
 		Reversed = false
 	},
@@ -39,6 +39,40 @@ local entity = spawner.Create({
 		Enabled = true,
 		Range = 40,
 		Amount = 125
+	},
+	Jumpscare = {
+		true,
+		{
+			Image1 = "https://raw.githubusercontent.com/no12356/Doors-Hardmode-Remake/refs/heads/main/jumpscares/depth.png",
+			Image2 = "https://raw.githubusercontent.com/no12356/Doors-Hardmode-Remake/refs/heads/main/jumpscares/depth.png",
+
+			Shake = true,
+
+			Sound1 = {
+				10483790459,
+				{
+					Volume = 0.5
+				}
+			},
+
+			Sound2 = {
+				5263560566,
+				{
+					Volume = 0.5
+				}
+			},
+
+			Flashing = {
+				true,
+				Color3.fromRGB(50, 115, 108)
+			},
+
+			Tease = {
+				false,
+				Min = 1,
+				Max = 5
+			}
+		}
 	},
 	Crucifixion = {
 		Enabled = true,
@@ -56,11 +90,11 @@ local entity = spawner.Create({
 ---====== Debug entity ======---
 
 entity:SetCallback("OnSpawned", function()
-    print("Entity has spawned")
+	print("Entity has spawned")
 end)
 
 entity:SetCallback("OnStartMoving", function()
-    print("Entity has started moving")
+	print("Entity has started moving")
 end)
 
 entity:SetCallback("OnReachNode", function(node)
@@ -68,11 +102,11 @@ entity:SetCallback("OnReachNode", function(node)
 end)
 
 entity:SetCallback("OnEnterRoom", function(room, firstTime)
-    if firstTime == true then
-        print("Entity has entered room: ".. room.Name.. " for the first time")
-    else
-        print("Entity has entered room: ".. room.Name.. " again")
-    end
+	if firstTime == true then
+		print("Entity has entered room: ".. room.Name.. " for the first time")
+	else
+		print("Entity has entered room: ".. room.Name.. " again")
+	end
 end)
 
 entity:SetCallback("OnLookAt", function(lineOfSight)
@@ -84,19 +118,19 @@ entity:SetCallback("OnLookAt", function(lineOfSight)
 end)
 
 entity:SetCallback("OnRebounding", function(startOfRebound)
-    if startOfRebound == true then
-        print("Entity has started rebounding")
+	if startOfRebound == true then
+		print("Entity has started rebounding")
 	else
-        print("Entity has finished rebounding")
+		print("Entity has finished rebounding")
 	end
 end)
 
 entity:SetCallback("OnDespawning", function()
-    print("Entity is despawning")
+	print("Entity is despawning")
 end)
 
 entity:SetCallback("OnDespawned", function()
-    print("Entity has despawned")
+	print("Entity has despawned")
 end)
 
 entity:SetCallback("OnDamagePlayer", function(newHealth)
@@ -113,7 +147,7 @@ DEVELOPER NOTE:
 By overwriting 'CrucifixionOverwrite' the default crucifixion callback will be replaced with your custom callback.
 
 entity:SetCallback("CrucifixionOverwrite", function()
-    print("Custom crucifixion callback")
+	print("Custom crucifixion callback")
 end)
 
 ]]--
