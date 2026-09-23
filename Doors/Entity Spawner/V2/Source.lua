@@ -1091,11 +1091,12 @@ bg.ZIndex = 999
 face.Name = "Face"
 face.AnchorPoint = Vector2.new(0.5, 0.5)
 face.BackgroundTransparency = 1
-face.Position = UDim2.new(0.5, 0, 0.5, 0)
-face.Size = UDim2.new(0, 150, 0, 150)
-face.Image = ""
-face.ZIndex = 1000
 
+face.Size = UDim2.fromScale(0.6, 0.6)
+face.Position = UDim2.fromScale(0.5, 0.5)
+
+face.ScaleType = Enum.ScaleType.Fit
+face.ZIndex = 1000
 pcall(function()
 	face.ResampleMode = Enum.ResamplerMode.Pixelated
 end)
