@@ -1,3 +1,5 @@
+local JumpscarePlayed = false
+
 --[[
 	Vynixu Entity Spawner V2
 	Fixed + Jumpscare
