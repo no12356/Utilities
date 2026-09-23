@@ -1016,8 +1016,6 @@ end
 
 -- \\ Jumpscare // --
 
-local JumpscarePlaying = false
-
 local function PlayJumpscare(config)
 
 	if JumpscarePlaying then
@@ -1028,18 +1026,18 @@ local function PlayJumpscare(config)
 		or config[1] ~= true
 	then
 		return
-end
+	end
+
+	local s = config[2]
+
+	if typeof(s) ~= "table" then
+		return
+	end
 
 	JumpscarePlaying = true
 
-	local oldGui = CoreGui:FindFirstChild("JumpscareGui")
-
-	if oldGui then
-		oldGui:Destroy()
-	end
-
-local image1 = ""
-local image2 = ""
+	local image1 = ""
+	local image2 = ""
 
 	local function LoadJumpscareSound(data)
 		if typeof(data) ~= "table"
