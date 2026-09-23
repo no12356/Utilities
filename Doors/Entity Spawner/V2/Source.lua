@@ -1071,40 +1071,43 @@ local function PlayJumpscare(config)
 		return sound
 	end
 
-	local sound1 = LoadJumpscareSound(s.Sound1)
-	local sound2 = LoadJumpscareSound(s.Sound2)
+	local sound1 = nil
+local sound2 = nil
 
-	local gui = Instance.new("ScreenGui")
-	local bg = Instance.new("Frame")
-	local face = Instance.new("ImageLabel")
+local gui = Instance.new("ScreenGui")
+local bg = Instance.new("Frame")
+local face = Instance.new("ImageLabel")
 
-	gui.Name = "JumpscareGui"
-	gui.IgnoreGuiInset = true
-	gui.ResetOnSpawn = false
-	gui.DisplayOrder = 999999
-	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.Name = "JumpscareGui"
+gui.IgnoreGuiInset = true
+gui.ResetOnSpawn = false
+gui.DisplayOrder = 999999
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-	bg.Name = "Background"
-	bg.BackgroundColor3 = Color3.new(0, 0, 0)
-	bg.BorderSizePixel = 0
-	bg.Size = UDim2.new(1, 0, 1, 0)
-	bg.ZIndex = 999
+bg.Name = "Background"
+bg.BackgroundColor3 = Color3.new(0, 0, 0)
+bg.BorderSizePixel = 0
+bg.Size = UDim2.new(1, 0, 1, 0)
+bg.ZIndex = 999
 
-	face.Name = "Face"
-	face.AnchorPoint = Vector2.new(0.5, 0.5)
-	face.BackgroundTransparency = 1
-	face.Position = UDim2.new(0.5, 0, 0.5, 0)
-	face.Size = UDim2.new(0, 150, 0, 150)
-	face.Image = image1 or ""
-	face.ZIndex = 1000
+face.Name = "Face"
+face.AnchorPoint = Vector2.new(0.5, 0.5)
+face.BackgroundTransparency = 1
+face.Position = UDim2.new(0.5, 0, 0.5, 0)
+face.Size = UDim2.new(0, 150, 0, 150)
+face.Image = ""
+face.ZIndex = 1000
 
-	pcall(function()
-		face.ResampleMode = Enum.ResamplerMode.Pixelated
-	end)
+pcall(function()
+	face.ResampleMode = Enum.ResamplerMode.Pixelated
+end)
 
-	face.Parent = bg
-	bg.Parent = gui
-	gui.Parent = CoreGui
+face.Parent = bg
+bg.Parent = gui
+gui.Parent = CoreGui
+
+sound1 = LoadJumpscareSound(s.Sound1)
+sound2 = LoadJumpscareSound(s.Sound2)
 
 task.spawn(function()
 	image1 = LoadCustomAsset(s.Image1)
