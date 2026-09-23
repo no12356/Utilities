@@ -1035,8 +1035,8 @@ local function PlayJumpscare(config)
 
 	JumpscarePlayed = true
 
-	local image1 = ""
-	local image2 = ""
+local image1 = PreloadedJumpscareImages.Image1
+local image2 = PreloadedJumpscareImages.Image2
 
 	local function LoadJumpscareSound(data)
 		if typeof(data) ~= "table"
@@ -2681,6 +2681,11 @@ Module.Create =
 
 -- \\ Preload jumpscare images // --
 
+PreloadedJumpscareImages = {
+	Image1 = nil,
+	Image2 = nil
+}
+
 if typeof(newConfig.Jumpscare) == "table"
 	and newConfig.Jumpscare[1] == true
 	and typeof(newConfig.Jumpscare[2]) == "table"
@@ -2690,15 +2695,15 @@ then
 
 	task.spawn(function()
 		if jumpscareConfig.Image1 then
-			pcall(function()
+			PreloadedJumpscareImages.Image1 =
 				LoadCustomAsset(jumpscareConfig.Image1)
-			end)
 		end
+	end)
 
+	task.spawn(function()
 		if jumpscareConfig.Image2 then
-			pcall(function()
+			PreloadedJumpscareImages.Image2 =
 				LoadCustomAsset(jumpscareConfig.Image2)
-			end)
 		end
 	end)
 
