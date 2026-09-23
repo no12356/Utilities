@@ -1022,9 +1022,7 @@ local function PlayJumpscare(config)
 		return
 	end
 
-	if typeof(config) ~= "table"
-		or config[1] ~= true
-	then
+	if typeof(config) ~= "table" or config[1] ~= true then
 		return
 	end
 
