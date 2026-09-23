@@ -1019,6 +1019,7 @@ end
 local JumpscarePlaying = false
 
 local function PlayJumpscare(config)
+
 	if JumpscarePlaying then
 		return
 	end
@@ -1027,13 +1028,7 @@ local function PlayJumpscare(config)
 		or config[1] ~= true
 	then
 		return
-	end
-
-	local s = config[2]
-
-	if typeof(s) ~= "table" then
-		return
-	end
+end
 
 	JumpscarePlaying = true
 
@@ -1280,6 +1275,9 @@ end)
 		sound2:Stop()
 		sound2:Destroy()
 	end
+end
+
+JumpscarePlaying = false
 end
 
 -- \\ Crucifix // --
