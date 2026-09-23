@@ -1261,7 +1261,7 @@ end)
 		}
 	):Play()
 
-	task.wait(0.75)
+	task.wait(2)
 
 	if gui then
 		gui:Destroy()
