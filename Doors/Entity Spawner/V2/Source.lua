@@ -1275,7 +1275,6 @@ end)
 		sound2:Stop()
 		sound2:Destroy()
 	end
-end
 
 JumpscarePlaying = false
 end
