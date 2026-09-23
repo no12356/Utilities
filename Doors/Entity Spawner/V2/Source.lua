@@ -1,3 +1,4 @@
+local TS = game:GetService("TweenService")
 local JumpscarePlayed = false
 
 --[[
@@ -1083,7 +1084,7 @@ gui.DisplayOrder = 999999
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 bg.Name = "Background"
-bg.BackgroundTransparency = 1
+bg.Size = UDim2.new(1, 0, 1, 0)
 bg.BorderSizePixel = 0
 bg.Size = UDim2.new(1, 0, 1, 0)
 bg.ZIndex = 999
