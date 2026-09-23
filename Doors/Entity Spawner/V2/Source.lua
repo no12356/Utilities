@@ -707,8 +707,8 @@ local function OnCharacterAdded(char)
 		char:WaitForChild("Humanoid")
 
 	JumpscarePlayed = false
-
-	RootPart =
+	
+RootPart =
 		char:FindFirstChild("HumanoidRootPart")
 		or char.PrimaryPart
 		or char:FindFirstChildWhichIsA(
