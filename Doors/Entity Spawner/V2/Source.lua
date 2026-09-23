@@ -1093,7 +1093,7 @@ face.Name = "Face"
 face.AnchorPoint = Vector2.new(0.5, 0.5)
 face.BackgroundTransparency = 1
 
-face.Size = UDim2.fromScale(0.6, 0.6)
+face.Size = UDim2.fromScale(s.Size or 0.6, s.Size or 0.6)
 face.Position = UDim2.fromScale(0.5, 0.5)
 
 face.ScaleType = Enum.ScaleType.Fit
