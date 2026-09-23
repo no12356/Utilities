@@ -701,8 +701,10 @@ local function OnCharacterAdded(char)
 
 	Character = char
 
-	Humanoid =
-		char:WaitForChild("Humanoid")
+	Humanoid:SetAttribute(
+	"VynixuJumpscarePlayed",
+	false
+)
 
 	RootPart =
 		char:FindFirstChild("HumanoidRootPart")
