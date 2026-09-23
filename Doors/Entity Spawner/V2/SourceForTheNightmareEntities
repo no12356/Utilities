@@ -4490,94 +4490,31 @@ end
 
 local function CreateNightmareRush()
 
-	local entity
+    return Module.Create({
+        Model = 11179883020,
 
-	local success,
-		result =
-		pcall(function()
+        Speed = 200,
 
-			return Module.Create({
+        Damage = 125,
 
-				Entity = {
-					Name =
-						"Nightmare Rush",
+        Rebound = true,
+        ReboundAmount = 1,
 
-					Asset =
-						NIGHTMARE_RUSH_ASSET,
+        Jumpscare = true,
 
-					HeightOffset =
-						1
-				},
+        Callback = function(entity)
 
-				Lights = {
-					Flicker = {
-						Enabled = true,
-						Duration = 1
-					},
+            if entity and entity.Model then
+                ApplyNightmareEffect(
+                    entity.Model,
+                    NIGHTMARE_RUSH_TEXTURE
+                )
+            end
 
-					Shatter = true,
-					Repair = false
-				},
+        end
+    })
 
-				CameraShake = {
-					Enabled = true,
-
-					Range = 100,
-
-					Values = {
-						5,
-						15,
-						0.1,
-						1
-					}
-				},
-
-				Movement = {
-					Speed = 850,
-					Delay = 0,
-					Reversed = false
-				},
-
-				Rebounding = {
-					Enabled = false,
-					Type = "Ambush",
-					Min = 1,
-					Max = 1,
-					Delay = 0
-				},
-
-				Damage = {
-					Enabled = true,
-					Range = 100,
-					Amount = 125
-				},
-
-				Jumpscare = {
-					false
-				},
-
-				Crucifixion = {
-					Type = "Guiding",
-					Enabled = true,
-					Range = 100,
-					Resist = false,
-					Break = true
-				},
-
-				Death = {
-					Type = "Guiding",
-
-					Hints = {
-						"You died to Nightmare Rush.",
-						"Nightmare Rush is extremely fast.",
-						"Hide when you hear it."
-					},
-
-					Cause =
-						"Nightmare Rush"
-				}
-			})
-		end)
+end
 
 	if not success then
 
@@ -4650,7 +4587,7 @@ local function CreateNightmareAmbush()
 				Lights = {
 					Flicker = {
 						Enabled = true,
-						Duration = 1
+						Duration = 3
 					},
 
 					Shatter = true,
@@ -4671,16 +4608,16 @@ local function CreateNightmareAmbush()
 				},
 
 				Movement = {
-					Speed = 850,
-					Delay = 0,
+					Speed = 400,
+					Delay = 3,
 					Reversed = false
 				},
 
 				Rebounding = {
 					Enabled = true,
 					Type = "Ambush",
-					Min = 2,
-					Max = 2,
+					Min = 4,
+					Max = 6,
 					Delay = 2
 				},
 
