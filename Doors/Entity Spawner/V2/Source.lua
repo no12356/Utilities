@@ -1083,7 +1083,7 @@ gui.DisplayOrder = 999999
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 bg.Name = "Background"
-bg.BackgroundColor3 = Color3.new(0, 0, 0)
+bg.BackgroundTransparency = 1
 bg.BorderSizePixel = 0
 bg.Size = UDim2.new(1, 0, 1, 0)
 bg.ZIndex = 999
